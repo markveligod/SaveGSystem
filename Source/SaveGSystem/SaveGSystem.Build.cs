@@ -17,13 +17,12 @@ public class SaveGSystem : ModuleRules
         });
 
         PublicDependencyModuleNames.AddRange(new string[] {
-            "Core",
-            "CoreUObject",
+            "Core", "CoreUObject",
             // ... add other public dependencies that you statically link with here ...
         });
 
         PrivateDependencyModuleNames.AddRange(new string[] {
-            "Engine", "Slate", "SlateCore"
+            "Engine", "Slate", "SlateCore", "Json"
             // ... add private dependencies that you statically link with here ...
         });
 
