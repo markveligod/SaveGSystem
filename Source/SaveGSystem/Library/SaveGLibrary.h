@@ -11,7 +11,7 @@
  * 1. Data compression
  * 2. Data read/write
  * 3. Find Property
- * 4. Serialize Property String/Numeric
+ * 4. Serialize Property String/Numeric/Object/Bool/Struct/Array
  */
 UCLASS()
 class SAVEGSYSTEM_API USaveGLibrary : public UBlueprintFunctionLibrary
@@ -28,7 +28,22 @@ public:
     static bool DecompressData(const TArray<uint8>& CompressedData, TArray<uint8>& OutData);
 
     /** @public  **/
+    static FString ConvertJsonObjectToString(const TSharedPtr<FJsonObject>& JsonObject);
+
+    /** @public  **/
+    static TSharedPtr<FJsonObject> ConvertStringToJsonObject(const FString& JsonString);
+
+    /** @public  **/
+    static TArray<uint8> ConvertStringToByte(const FString& JsonString);
+
+    /** @public  **/
+    static FString ConvertByteToString(const TArray<uint8>& ByteArray);
+
+    /** @public  **/
     static TArray<FProperty*> GetAllPropertyHasMetaSaveGame(const UObject* ObjectData);
+
+    /** @public  **/
+    static TArray<FProperty*> GetAllPropertyHasCustomMeta(const UObject* ObjectData, const FName& MetaName);
 
     /** @public  **/
     static bool SerializeBoolProperty(FProperty* Property, const void* ObjectData, TSharedPtr<FJsonObject> JsonObject);

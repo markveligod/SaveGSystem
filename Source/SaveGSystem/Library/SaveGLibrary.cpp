@@ -45,6 +45,49 @@ bool USaveGLibrary::DecompressData(const TArray<uint8>& CompressedData, TArray<u
     return true;
 }
 
+FString USaveGLibrary::ConvertJsonObjectToString(const TSharedPtr<FJsonObject>& JsonObject)
+{
+    FString OutputString;
+    if (JsonObject.IsValid())
+    {
+        TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&OutputString);
+        if (FJsonSerializer::Serialize(JsonObject.ToSharedRef(), Writer))
+        {
+            return OutputString;
+        }
+    }
+    return {};
+}
+
+TSharedPtr<FJsonObject> USaveGLibrary::ConvertStringToJsonObject(const FString& JsonString)
+{
+    TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(JsonString);
+    TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
+    if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
+    {
+        return JsonObject;
+    }
+
+    return {};
+}
+
+TArray<uint8> USaveGLibrary::ConvertStringToByte(const FString& JsonString)
+{
+    TArray<uint8> ByteArray;
+    FTCHARToUTF8 Converter(*JsonString); // Convert TCHAR to UTF-8
+    ByteArray.Append(reinterpret_cast<const uint8*>(Converter.Get()), Converter.Length());
+    return ByteArray;
+}
+
+FString USaveGLibrary::ConvertByteToString(const TArray<uint8>& ByteArray)
+{
+    if (ByteArray.Num() > 0)
+    {
+        return FString(UTF8_TO_TCHAR(reinterpret_cast<const char*>(ByteArray.GetData())));
+    }
+    return {};
+}
+
 TArray<FProperty*> USaveGLibrary::GetAllPropertyHasMetaSaveGame(const UObject* ObjectData)
 {
     TArray<FProperty*> Properties;
@@ -53,6 +96,21 @@ TArray<FProperty*> USaveGLibrary::GetAllPropertyHasMetaSaveGame(const UObject* O
         FProperty* Property = *PropIt;
         // Check if the property is marked with SaveGame metadata
         if (Property->HasMetaData(TEXT("SaveGame")))
+        {
+            Properties.Add(Property);
+        }
+    }
+    return Properties;
+}
+
+TArray<FProperty*> USaveGLibrary::GetAllPropertyHasCustomMeta(const UObject* ObjectData, const FName& MetaName)
+{
+    TArray<FProperty*> Properties;
+    for (TFieldIterator<FProperty> PropIt(ObjectData->GetClass()); PropIt; ++PropIt)
+    {
+        FProperty* Property = *PropIt;
+        // Check if the property is marked with SaveGame metadata
+        if (Property->HasMetaData(MetaName))
         {
             Properties.Add(Property);
         }
