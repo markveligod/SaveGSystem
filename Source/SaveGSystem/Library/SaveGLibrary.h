@@ -34,53 +34,47 @@ public:
     static bool SerializeBoolProperty(FProperty* Property, const void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
     /** @public  **/
-    static TSharedPtr<FJsonValue> SerializeBoolProperty(FProperty* Property, const void* ObjectData);
-
+    static bool DeserializeBoolProperty(FProperty* Property, void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
+    
     /** @public  **/
     static bool SerializeByteProperty(FProperty* Property, const void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
     /** @public  **/
-    static TSharedPtr<FJsonValue> SerializeByteProperty(FProperty* Property, const void* ObjectData);
+    static bool DeserializeByteProperty(FProperty* Property, void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
     /** @public  **/
     static bool SerializeStringProperty(FProperty* Property, const void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
     /** @public  **/
-    static TSharedPtr<FJsonValue> SerializeStringProperty(FProperty* Property, const void* ObjectData);
-
+    static bool DeserializeStringProperty(FProperty* Property, void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
+    
     /** @public  **/
     static bool SerializeNumericProperty(FProperty* Property, const void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
     /** @public  **/
-    static TSharedPtr<FJsonValue> SerializeNumericProperty(FProperty* Property, const void* ObjectData);
+    static bool DeserializeNumericProperty(FProperty* Property, void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
     /** @public  **/
     static bool SerializeObjectProperty(FProperty* Property, const void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
     /** @public  **/
-    static TSharedPtr<FJsonValue> SerializeObjectProperty(FProperty* Property, const void* ObjectData);
+    static bool DeserializeObjectProperty(FProperty* Property, void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
     /** @public  **/
     static bool SerializeStructProperty(FProperty* Property, const void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
     /** @public  **/
-    static TSharedPtr<FJsonValue> SerializeStructProperty(FProperty* Property, const void* ObjectData);
+    static bool DeserializeStructProperty(FProperty* Property, void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
     /** @public  **/
     static bool SerializeArrayProperty(FProperty* Property, const void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
     /** @public  **/
-    static TSharedPtr<FJsonValue> SerializeArrayProperty(FProperty* Property, const void* ObjectData);
-
-    /** @public  **/
-    static bool SerializeMapProperty(FProperty* Property, const void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
-
-    /** @public  **/
-    static TSharedPtr<FJsonValue> SerializeMapProperty(FProperty* Property, const void* ObjectData);
+    static bool DeserializeArrayProperty(FProperty* Property, void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
     /** @public  **/
     static void SerializeSubProperty(FProperty* SubProperty, const void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
     /** @public  **/
-    static TSharedPtr<FJsonValue> SerializeElementProperty(FProperty* InnerProperty, const void* ElementPtr);
+    static void DeserializeSubProperty(FProperty* SubProperty, void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 };
