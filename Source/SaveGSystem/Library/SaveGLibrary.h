@@ -21,7 +21,7 @@ class SAVEGSYSTEM_API USaveGLibrary : public UBlueprintFunctionLibrary
 public:
     /** @public  **/
     UFUNCTION(BlueprintCallable, Category = "SaveGLibrary | Compression")
-    static void CompressData(const TArray<uint8>& SomeData, TArray<uint8>& OutData);
+    static bool CompressData(TArray<uint8>& SomeData, TArray<uint8>& OutData);
 
     /** @public  **/
     UFUNCTION(BlueprintCallable, Category = "SaveGLibrary | Compression")

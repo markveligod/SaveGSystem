@@ -44,61 +44,15 @@ inline bool ClogPrint(bool Cond, TCHAR* NameFunction, const FString& Text)
 #define CLOG_SAVE_G_SYSTEM(Cond, Format, ...) \
     SaveGSystemSpace::ClogPrint(Cond, ANSI_TO_TCHAR(__FUNCTION__), FString::Printf(TEXT(Format), ##__VA_ARGS__))
 
-/** --- | ENUM | --- **/
+/** --- | Signatures | --- **/
 
-/** @enum Type of the stored variable **/
-UENUM(BlueprintType)
-enum class ETypeProperty_SaveG : uint8
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FActionSaveGSystemSignature, const FString&, Tag, UObject*, SavedObject);
+
+/** --- | UENUM | --- **/
+UENUM()
+enum class ESaveGSystemAction : uint8
 {
-    None,
-    Number,
-    Boolean,
-    String,
-};
-
-/** --- | STRUCT | --- **/
-
-/** @struct Storing context data about a variable **/
-USTRUCT(BlueprintType)
-struct FPropertyContext_SaveG
-{
-    GENERATED_BODY()
-
-    /****/
-    UPROPERTY(BlueprintReadWrite)
-    ETypeProperty_SaveG TypeProperty_SaveG{ETypeProperty_SaveG::None};
-
-    /****/
-    UPROPERTY(BlueprintReadWrite)
-    FString PropertyName;
-
-    /****/
-    UPROPERTY(BlueprintReadWrite)
-    FString PropertyValue;
-};
-
-/** @struct Storing data to bind a key to data by property **/
-USTRUCT(BlueprintType)
-struct FObjectContext_SaveG
-{
-    GENERATED_BODY()
-
-    /** The key is a tag indicating the registration of an object. **/
-    UPROPERTY(BlueprintReadWrite)
-    FString Key;
-
-    /****/
-    UPROPERTY(BlueprintReadWrite)
-    TArray<FPropertyContext_SaveG> Values;
-};
-
-/** @struct Storing all data for serialization in JSON format. **/
-USTRUCT(BlueprintType)
-struct FJsonSerializer_SaveG
-{
-    GENERATED_BODY()
-
-    /** Data with manual registration in the save system **/
-    UPROPERTY(BlueprintReadWrite)
-    TArray<FObjectContext_SaveG> CustomObjects;
+    None = 0,
+    Save,
+    Load,
 };

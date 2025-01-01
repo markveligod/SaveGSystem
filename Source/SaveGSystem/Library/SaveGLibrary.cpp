@@ -3,45 +3,36 @@
 #include "SaveGLibrary.h"
 #include "Compression/CompressedBuffer.h"
 #include "SaveGSystem/Data/SaveGSystemDataTypes.h"
+#include "Serialization/ArchiveLoadCompressedProxy.h"
+#include "Serialization/ArchiveSaveCompressedProxy.h"
 
-void USaveGLibrary::CompressData(const TArray<uint8>& SomeData, TArray<uint8>& OutData)
+bool USaveGLibrary::CompressData(TArray<uint8>& SomeData, TArray<uint8>& OutData)
 {
-    // Create an FSharedBuffer from the uncompressed data
-    const FSharedBuffer UncompressedBuffer = FSharedBuffer::MakeView(SomeData.GetData(), SomeData.Num());
+    // Compress the data
+    FArchiveSaveCompressedProxy Compressor(OutData, NAME_Zlib);
+    if (Compressor.IsError())
+    {
+        LOG_SAVE_G_SYSTEM(Error, "Failed to initialize compression archive.");
+        return false;
+    }
 
-    // Compress the data with the desired compression level
-    const FCompressedBuffer CompressedBuffer =
-        FCompressedBuffer::Compress(UncompressedBuffer, ECompressedBufferCompressor::Kraken, ECompressedBufferCompressionLevel::Normal);
-
-    // Retrieve the compressed data
-    const FSharedBuffer SharedCompressedData = CompressedBuffer.GetCompressed().ToShared();
-    const void* DataPtr = SharedCompressedData.GetData();
-    const int64 DataSize = SharedCompressedData.GetSize();
-
-    // Copy the compressed data to the output array
-    OutData.SetNumUninitialized(DataSize);
-    FMemory::Memcpy(OutData.GetData(), DataPtr, DataSize);
+    // Serialize the uncompressed data into the compressor
+    Compressor << SomeData;
+    Compressor.Flush();
+    return true;
 }
 
 bool USaveGLibrary::DecompressData(const TArray<uint8>& CompressedData, TArray<uint8>& OutData)
 {
-    // Create an FSharedBuffer from the compressed data
-    const FSharedBuffer SharedCompressedData = FSharedBuffer::MakeView(CompressedData.GetData(), CompressedData.Num());
+    FArchiveLoadCompressedProxy Decompressor(CompressedData, NAME_Zlib);
+    if (Decompressor.IsError())
+    {
+        LOG_SAVE_G_SYSTEM(Error, "Failed to initialize decompression archive.");
+        return false;
+    }
 
-    // Create a compressed buffer from the shared buffer
-    const FCompressedBuffer CompressedBuffer = FCompressedBuffer::FromCompressed(SharedCompressedData);
-
-    // Decompress the data
-    const FSharedBuffer DecompressedBuffer = CompressedBuffer.Decompress();
-
-    // Retrieve the decompressed data
-    const void* DataPtr = DecompressedBuffer.GetData();
-    const int64 DataSize = DecompressedBuffer.GetSize();
-
-    // Copy the decompressed data to the output array
-    OutData.SetNumUninitialized(DataSize);
-    FMemory::Memcpy(OutData.GetData(), DataPtr, DataSize);
-
+    // Serialize the decompressed data
+    Decompressor << OutData;
     return true;
 }
 
@@ -63,7 +54,7 @@ TSharedPtr<FJsonObject> USaveGLibrary::ConvertStringToJsonObject(const FString& 
 {
     TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(JsonString);
     TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
-    if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
+    if (FJsonSerializer::Deserialize(Reader, JsonObject))
     {
         return JsonObject;
     }
@@ -94,8 +85,9 @@ TArray<FProperty*> USaveGLibrary::GetAllPropertyHasMetaSaveGame(const UObject* O
     for (TFieldIterator<FProperty> PropIt(ObjectData->GetClass()); PropIt; ++PropIt)
     {
         FProperty* Property = *PropIt;
+        if (!Property) continue;
         // Check if the property is marked with SaveGame metadata
-        if (Property->HasMetaData(TEXT("SaveGame")))
+        if (Property->HasMetaData(TEXT("SaveGame")) || Property->HasAnyPropertyFlags(CPF_SaveGame))
         {
             Properties.Add(Property);
         }
@@ -601,7 +593,6 @@ bool USaveGLibrary::SerializeStructProperty(FProperty* Property, const void* Obj
         {
             FProperty* StructField = *It;
             if (!StructField) continue;
-            if (!StructField->HasMetaData("SaveGame")) continue;
 
             SerializeSubProperty(StructField, StructData, StructJsonObject);
         }
@@ -625,7 +616,6 @@ bool USaveGLibrary::DeserializeStructProperty(FProperty* Property, void* ObjectD
             {
                 FProperty* StructField = *It;
                 if (!StructField) continue;
-                if (!StructField->HasMetaData("SaveGame")) continue;
                 DeserializeSubProperty(StructField, StructData, *StructJson);
             }
             return true;
