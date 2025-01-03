@@ -44,15 +44,42 @@ inline bool ClogPrint(bool Cond, TCHAR* NameFunction, const FString& Text)
 #define CLOG_SAVE_G_SYSTEM(Cond, Format, ...) \
     SaveGSystemSpace::ClogPrint(Cond, ANSI_TO_TCHAR(__FUNCTION__), FString::Printf(TEXT(Format), ##__VA_ARGS__))
 
-/** --- | Signatures | --- **/
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FActionSaveGSystemSignature, const FString&, Tag, UObject*, SavedObject);
-
 /** --- | UENUM | --- **/
 UENUM()
-enum class ESaveGSystemAction : uint8
+enum class ETaskAction_SaveGSystem : uint8
 {
     None = 0,
     Save,
     Load,
 };
+
+/** --- | STRUCT | --- **/
+
+/** @struct Data for the operation of asynktask **/
+struct FInitDataAsyncTask_SaveGSystem
+{
+    ETaskAction_SaveGSystem Action{ETaskAction_SaveGSystem::None};
+    float Delay{5.0f};
+    FString Tag{};
+    TWeakObjectPtr<> Object{nullptr};
+    FString JsonSaveData{};
+
+    UObject* GetObject() const
+    {
+        return Object.Get();
+    }
+
+    UClass* GetObjectClass() const
+    {
+        return Object.IsValid() ? Object->GetClass() : nullptr;
+    }
+
+    bool IsValid() const
+    {
+        return Object.IsValid() && Object->GetClass() && !Tag.IsEmpty() && Action != ETaskAction_SaveGSystem::None && Delay > 0.0f;
+    }
+};
+
+/** --- | Signatures | --- **/
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FActionSaveGSystemSignature, const FString&, Tag, UObject*, SavedObject);

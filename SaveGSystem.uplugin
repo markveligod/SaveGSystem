@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.5",
+	"VersionName": "1.6",
 	"FriendlyName": "SaveGSystem",
 	"Description": "An attempt to create a universal plug-in for saving and compressing data about the game world",
 	"Category": "Other",

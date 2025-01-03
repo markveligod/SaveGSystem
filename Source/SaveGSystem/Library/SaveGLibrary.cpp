@@ -53,12 +53,13 @@ FString USaveGLibrary::ConvertJsonObjectToString(const TSharedPtr<FJsonObject>& 
 TSharedPtr<FJsonObject> USaveGLibrary::ConvertStringToJsonObject(const FString& JsonString)
 {
     TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(JsonString);
-    TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
+    TSharedPtr<FJsonObject> JsonObject = MakeShared<FJsonObject>();
     if (FJsonSerializer::Deserialize(Reader, JsonObject))
     {
         return JsonObject;
     }
 
+    LOG_SAVE_G_SYSTEM(Error, "Failed to deserialize json object. Msg: %s", *Reader->GetErrorMessage());
     return {};
 }
 
@@ -66,7 +67,7 @@ TArray<uint8> USaveGLibrary::ConvertStringToByte(const FString& JsonString)
 {
     TArray<uint8> ByteArray;
     FTCHARToUTF8 Converter(*JsonString); // Convert TCHAR to UTF-8
-    ByteArray.Append(reinterpret_cast<const uint8*>(Converter.Get()), Converter.Length());
+    ByteArray.Append((const uint8*)(Converter.Get()), Converter.Length());
     return ByteArray;
 }
 
@@ -74,7 +75,7 @@ FString USaveGLibrary::ConvertByteToString(const TArray<uint8>& ByteArray)
 {
     if (ByteArray.Num() > 0)
     {
-        return FString(UTF8_TO_TCHAR(reinterpret_cast<const char*>(ByteArray.GetData())));
+        return FString(UTF8_TO_TCHAR((const char*)(ByteArray.GetData())));
     }
     return {};
 }

@@ -7,6 +7,7 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "SaveGSubSystem.generated.h"
 
+class UUpdateSaveDataAsyncTask;
 /**
  * 
  */
@@ -15,6 +16,18 @@ class SAVEGSYSTEM_API USaveGSubSystem : public UGameInstanceSubsystem
 {
     GENERATED_BODY()
 
+#pragma region Subsystems
+
+public:
+
+    /** @public **/
+    static USaveGSubSystem* Get(const UWorld* World);
+
+    /** @public **/
+    static USaveGSubSystem* Get(const UGameInstance* GameInstance);
+
+#pragma endregion
+    
 #pragma region Actions
 
 public:
@@ -39,10 +52,23 @@ public:
     UFUNCTION(BlueprintCallable)
     TArray<FString> GetAllSaveFiles();
 
+    /** @public  **/
+    UFUNCTION(BlueprintCallable)
+    bool IsActionDataProcess() { return ActionDataAsyncTask.Get() != nullptr || RequestActionData.Num() != 0; }
+
 protected:
 
     /** @protected  **/
     virtual FString GenerateSaveFileName();
+
+private:
+
+    /** @private **/
+    void NextRequestActionData();
+
+    /** @private **/
+    UFUNCTION()
+    void RegisterCompleteActionDataAsyncTask(const FString& Tag, UObject* SavedObject);
 
 #pragma endregion
 
@@ -71,7 +97,13 @@ protected:
 #pragma region Data
 
 private:
-    
+
+    /** @private **/
+    TWeakObjectPtr<UUpdateSaveDataAsyncTask> ActionDataAsyncTask;
+
+    /** @private Request Queue action save/load data **/
+    TArray<FInitDataAsyncTask_SaveGSystem> RequestActionData;
+
     /** @private Key is tag. Value storage save data **/
     TMap<FString, FString> SaveGData;
 
