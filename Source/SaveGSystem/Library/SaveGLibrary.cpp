@@ -699,3 +699,17 @@ void USaveGLibrary::DeserializeSubProperty(FProperty* SubProperty, void* ObjectD
     if (DeserializeStructProperty(SubProperty, ObjectData, JsonObject)) return;
     if (DeserializeArrayProperty(SubProperty, ObjectData, JsonObject)) return;
 }
+
+FString USaveGLibrary::ValidateFileName(const FString& FileName)
+{
+    // Find the position of the first dot in the string
+    int32 DotPosition;
+    if (FileName.FindChar('.', DotPosition))
+    {
+        // Return the substring from the start up to the dot
+        return FileName.Left(DotPosition);
+    }
+
+    // If no dot is found, return the original string
+    return FileName;
+}

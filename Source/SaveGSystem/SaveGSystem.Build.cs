@@ -22,7 +22,7 @@ public class SaveGSystem : ModuleRules
         });
 
         PrivateDependencyModuleNames.AddRange(new string[] {
-            "Engine", "Slate", "SlateCore", "Json"
+            "Engine", "Slate", "SlateCore", "Json", "DeveloperSettings"
             // ... add private dependencies that you statically link with here ...
         });
 

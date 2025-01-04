@@ -3,6 +3,7 @@
 
 #include "SaveGSubSystem.h"
 #include "SaveGSystem/Library/SaveGLibrary.h"
+#include "SaveGSystem/Settings/SaveGSettings.h"
 #include "SaveGSystem/Task/UpdateSaveDataAsyncTask.h"
 
 #pragma region Actions
@@ -57,8 +58,9 @@ void USaveGSubSystem::SaveDataInFile(FString FileName)
     {
         FileName = GenerateSaveFileName();
     }
+    FileName = USaveGLibrary::ValidateFileName(FileName);
     FString Directory = FPaths::ProjectSavedDir();
-    FString FilePath = Directory + "/" + FileName;
+    FString FilePath = Directory + "SaveGame/" + FileName + ".SaveG";
     TSharedPtr<FJsonObject> JsonObject = MakeShared<FJsonObject>();
     for (auto& Pair : SaveGData)
     {
@@ -66,6 +68,12 @@ void USaveGSubSystem::SaveDataInFile(FString FileName)
     }
     FString JsonString = USaveGLibrary::ConvertJsonObjectToString(JsonObject);
     LOG_SAVE_G_SYSTEM(Display, "Convert JSON | Count bytes: %i | Data: %s", JsonString.Len(), *JsonString);
+
+    if (USaveGSettings::IsEnableDataJSONFileStatic())
+    {
+        FString FilePathJson = Directory + "SaveGame/" + FileName + ".json";
+        FFileHelper::SaveStringToFile(JsonString, *FilePathJson);
+    }
 
     FString TrimStr = JsonString.TrimStartAndEnd();
     TArray<uint8> ConvertByte = USaveGLibrary::ConvertStringToByte(TrimStr);
@@ -81,7 +89,7 @@ void USaveGSubSystem::LoadDataFromFile(const FString& FileName)
     if (CLOG_SAVE_G_SYSTEM(FileName.IsEmpty(), "File Name is empty")) return;
 
     FString Directory = FPaths::ProjectSavedDir();
-    FString FilePath = Directory + "/" + FileName;
+    FString FilePath = Directory + "SaveGame/" + FileName + ".SaveG";
     TArray<uint8> CompressData;
     FFileHelper::LoadFileToArray(CompressData, *FilePath);
 
@@ -109,7 +117,7 @@ TArray<FString> USaveGSubSystem::GetAllSaveFiles()
     if (FPaths::DirectoryExists(Directory))
     {
         IFileManager& FileManager = IFileManager::Get();
-        FileManager.FindFiles(FileList, *Directory, TEXT("*.sav"));
+        FileManager.FindFiles(FileList, *Directory, TEXT("*.SaveG"));
     }
 
     return FileList;
@@ -117,7 +125,7 @@ TArray<FString> USaveGSubSystem::GetAllSaveFiles()
 
 FString USaveGSubSystem::GenerateSaveFileName()
 {
-    return FString::Printf(TEXT("SaveGame_%s.sav"), *FDateTime::Now().ToString());
+    return FString::Printf(TEXT("SaveGame_%s"), *FDateTime::Now().ToString());
 }
 
 void USaveGSubSystem::NextRequestActionData()

@@ -92,4 +92,7 @@ public:
 
     /** @public  **/
     static void DeserializeSubProperty(FProperty* SubProperty, void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
+
+    /** @public **/
+    static FString ValidateFileName(const FString& FileName);
 };
