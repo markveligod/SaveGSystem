@@ -36,6 +36,10 @@ public:
     UFUNCTION(BlueprintCallable)
     void UpdateSaveData(FString Tag, UObject* SavedObject);
 
+    /** @public Checking for a tag with saved data **/
+    UFUNCTION(BlueprintCallable)
+    bool IsHaveTag(FString Tag) const;
+
     /** @public Loads all the saved data into an object **/
     UFUNCTION(BlueprintCallable)
     void LoadSaveData(FString Tag, UObject* SavedObject);

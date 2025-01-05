@@ -34,9 +34,6 @@ public:
     FInitDataAsyncTask_SaveGSystem GetInitData() const { return InitData; }
 
     /** @public **/
-    virtual UWorld* GetWorld() const override;
-
-    /** @public **/
     FActionSaveGSystemSignature& GetCompleteTaskSignature() { return CompleteTask; }
 
 protected:

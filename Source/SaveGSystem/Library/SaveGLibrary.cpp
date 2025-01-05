@@ -351,7 +351,7 @@ bool USaveGLibrary::DeserializeNumericProperty(FProperty* Property, void* Object
         uint32 Value;
         if (JsonObject->TryGetNumberField(UInt32Property->GetName(), Value))
         {
-            IntProperty->SetPropertyValue_InContainer(ObjectData, Value);
+            UInt32Property->SetPropertyValue_InContainer(ObjectData, Value);
             return true;
         }
     }
@@ -360,7 +360,7 @@ bool USaveGLibrary::DeserializeNumericProperty(FProperty* Property, void* Object
         int64 Value;
         if (JsonObject->TryGetNumberField(Int64Property->GetName(), Value))
         {
-            IntProperty->SetPropertyValue_InContainer(ObjectData, Value);
+            Int64Property->SetPropertyValue_InContainer(ObjectData, Value);
             return true;
         }
     }
@@ -369,7 +369,7 @@ bool USaveGLibrary::DeserializeNumericProperty(FProperty* Property, void* Object
         uint64 Value;
         if (JsonObject->TryGetNumberField(UInt64Property->GetName(), Value))
         {
-            IntProperty->SetPropertyValue_InContainer(ObjectData, Value);
+            UInt64Property->SetPropertyValue_InContainer(ObjectData, Value);
             return true;
         }
     }
@@ -378,7 +378,7 @@ bool USaveGLibrary::DeserializeNumericProperty(FProperty* Property, void* Object
         float Value;
         if (JsonObject->TryGetNumberField(FloatProperty->GetName(), Value))
         {
-            IntProperty->SetPropertyValue_InContainer(ObjectData, Value);
+            FloatProperty->SetPropertyValue_InContainer(ObjectData, Value);
             return true;
         }
     }

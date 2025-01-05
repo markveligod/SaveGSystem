@@ -28,10 +28,16 @@ void USaveGSubSystem::UpdateSaveData(FString Tag, UObject* SavedObject)
     NewDataTask.Object = SavedObject;
     NewDataTask.Tag = Tag;
     RequestActionData.Add(NewDataTask);
-    if (UWorld* World = GetWorld())
+    if (UGameInstance* GameInstance = GetGameInstance())
     {
-        World->GetTimerManager().SetTimerForNextTick(this, &ThisClass::NextRequestActionData);
+        GameInstance->GetTimerManager().SetTimerForNextTick(this, &ThisClass::NextRequestActionData);
     }
+}
+
+bool USaveGSubSystem::IsHaveTag(FString Tag) const
+{
+    if (CLOG_SAVE_G_SYSTEM(Tag.IsEmpty(), "Tag is empty")) return false;
+    return SaveGData.Contains(Tag);
 }
 
 void USaveGSubSystem::LoadSaveData(FString Tag, UObject* SavedObject)
@@ -46,9 +52,9 @@ void USaveGSubSystem::LoadSaveData(FString Tag, UObject* SavedObject)
     NewDataTask.Tag = Tag;
     NewDataTask.JsonSaveData = SaveGData[Tag];
     RequestActionData.Add(NewDataTask);
-    if (UWorld* World = GetWorld())
+    if (UGameInstance* GameInstance = GetGameInstance())
     {
-        World->GetTimerManager().SetTimerForNextTick(this, &ThisClass::NextRequestActionData);
+        GameInstance->GetTimerManager().SetTimerForNextTick(this, &ThisClass::NextRequestActionData);
     }
 }
 
@@ -174,9 +180,9 @@ void USaveGSubSystem::RegisterCompleteActionDataAsyncTask(const FString& Tag, UO
     }
 
     ActionDataAsyncTask.Reset();
-    if (UWorld* World = GetWorld())
+    if (UGameInstance* GameInstance = GetGameInstance())
     {
-        World->GetTimerManager().SetTimerForNextTick(this, &ThisClass::NextRequestActionData);
+        GameInstance->GetTimerManager().SetTimerForNextTick(this, &ThisClass::NextRequestActionData);
     }
 }
 

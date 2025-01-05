@@ -21,38 +21,33 @@ void UUpdateSaveDataAsyncTask::Activate()
 {
     Super::Activate();
     ActivateRemainTimer();
-    if (UWorld* World = GetWorld())
+    if (UGameInstance* GameInstance = RegisteredWithGameInstance.Get())
     {
-        World->GetTimerManager().SetTimerForNextTick(this, &ThisClass::ActionTask);
+        GameInstance->GetTimerManager().SetTimerForNextTick(this, &ThisClass::ActionTask);
     }
 }
 
 void UUpdateSaveDataAsyncTask::SetReadyToDestroy()
 {
-    if (UWorld* World = GetWorld())
+    if (UGameInstance* GameInstance = RegisteredWithGameInstance.Get())
     {
-        World->GetTimerManager().ClearTimer(RemainDelay_TimerHandle);
+        GameInstance->GetTimerManager().ClearTimer(RemainDelay_TimerHandle);
     }
     CompleteTask.Broadcast(InitData.Tag, InitData.Object.Get());
     Super::SetReadyToDestroy();
 }
 
-UWorld* UUpdateSaveDataAsyncTask::GetWorld() const
-{
-    if (RegisteredWithGameInstance.Get())
-    {
-        return RegisteredWithGameInstance->GetWorld();
-    }
-    return Super::GetWorld();
-}
-
 void UUpdateSaveDataAsyncTask::ActivateRemainTimer()
 {
-    if (CLOG_SAVE_G_SYSTEM(GetWorld() == nullptr, "World is nullptr")) return;
-    if (CLOG_SAVE_G_SYSTEM(!InitData.IsValid(), "Init Data is not valid")) return;
-
-    GetWorld()->GetTimerManager().ClearTimer(RemainDelay_TimerHandle);
-    GetWorld()->GetTimerManager().SetTimer(RemainDelay_TimerHandle, this, &ThisClass::SetReadyToDestroy, InitData.Delay, false);
+    if (UGameInstance* GameInstance = RegisteredWithGameInstance.Get())
+    {
+        GameInstance->GetTimerManager().ClearTimer(RemainDelay_TimerHandle);
+        GameInstance->GetTimerManager().SetTimer(RemainDelay_TimerHandle, this, &ThisClass::SetReadyToDestroy, InitData.Delay, false);
+    }
+    else
+    {
+        SetReadyToDestroy();
+    }
 }
 
 void UUpdateSaveDataAsyncTask::ActionTask()
@@ -88,9 +83,9 @@ void UUpdateSaveDataAsyncTask::SaveData()
     {
         ISaveGInterface::Execute_PostSave(InitData.GetObject());
     }
-    if (UWorld* World = GetWorld())
+    if (UGameInstance* GameInstance = RegisteredWithGameInstance.Get())
     {
-        World->GetTimerManager().SetTimerForNextTick(this, &ThisClass::SetReadyToDestroy);
+        GameInstance->GetTimerManager().SetTimerForNextTick(this, &ThisClass::SetReadyToDestroy);
     }
 }
 
@@ -115,8 +110,8 @@ void UUpdateSaveDataAsyncTask::LoadData()
         ISaveGInterface::Execute_PostLoad(InitData.GetObject());
     }
 
-    if (UWorld* World = GetWorld())
+    if (UGameInstance* GameInstance = RegisteredWithGameInstance.Get())
     {
-        World->GetTimerManager().SetTimerForNextTick(this, &ThisClass::SetReadyToDestroy);
+        GameInstance->GetTimerManager().SetTimerForNextTick(this, &ThisClass::SetReadyToDestroy);
     }
 }

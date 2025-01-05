@@ -25,13 +25,17 @@ public:
 
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "SaveGInterface")
     void PreSave();
+    virtual void PreSave_Implementation() {}
 
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "SaveGInterface")
     void PostSave();
+    virtual void PostSave_Implementation() {}
 
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "SaveGInterface")
     void PreLoad();
+    virtual void PreLoad_Implementation() {}
 
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "SaveGInterface")
     void PostLoad();
+    virtual void PostLoad_Implementation() {}
 };
