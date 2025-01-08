@@ -1,6 +1,5 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "SaveGSubSystem.h"
 #include "SaveGSystem/Library/SaveGLibrary.h"
 #include "SaveGSystem/Settings/SaveGSettings.h"
@@ -137,10 +136,7 @@ FString USaveGSubSystem::GenerateSaveFileName()
 void USaveGSubSystem::NextRequestActionData()
 {
     if (ActionDataAsyncTask.Get() != nullptr) return;
-    RequestActionData.RemoveAll([](const FInitDataAsyncTask_SaveGSystem& Data)
-    {
-        return !Data.IsValid();
-    });
+    RequestActionData.RemoveAll([](const FInitDataAsyncTask_SaveGSystem& Data) { return !Data.IsValid(); });
     if (RequestActionData.Num() == 0) return;
     if (!RequestActionData.IsValidIndex(0)) return;
 

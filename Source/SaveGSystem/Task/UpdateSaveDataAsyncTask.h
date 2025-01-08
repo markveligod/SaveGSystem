@@ -17,7 +17,6 @@ class SAVEGSYSTEM_API UUpdateSaveDataAsyncTask : public UBlueprintAsyncActionBas
     GENERATED_BODY()
 
 public:
-
     /** @public **/
     static UUpdateSaveDataAsyncTask* Create(const FInitDataAsyncTask_SaveGSystem& InitData);
 
@@ -37,7 +36,6 @@ public:
     FActionSaveGSystemSignature& GetCompleteTaskSignature() { return CompleteTask; }
 
 protected:
-
     /** @protected **/
     virtual void ActivateRemainTimer();
 
@@ -45,7 +43,6 @@ protected:
     virtual void ActionTask();
 
 private:
-
     /** @private **/
     void SaveData();
 

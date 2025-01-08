@@ -50,7 +50,7 @@ public:
 
     /** @public  **/
     static bool DeserializeBoolProperty(FProperty* Property, void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
-    
+
     /** @public  **/
     static bool SerializeByteProperty(FProperty* Property, const void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
@@ -62,7 +62,7 @@ public:
 
     /** @public  **/
     static bool DeserializeStringProperty(FProperty* Property, void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
-    
+
     /** @public  **/
     static bool SerializeNumericProperty(FProperty* Property, const void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 

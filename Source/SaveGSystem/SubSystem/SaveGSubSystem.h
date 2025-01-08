@@ -9,7 +9,7 @@
 
 class UUpdateSaveDataAsyncTask;
 /**
- * 
+ *
  */
 UCLASS()
 class SAVEGSYSTEM_API USaveGSubSystem : public UGameInstanceSubsystem
@@ -19,7 +19,6 @@ class SAVEGSYSTEM_API USaveGSubSystem : public UGameInstanceSubsystem
 #pragma region Subsystems
 
 public:
-
     /** @public **/
     static USaveGSubSystem* Get(const UWorld* World);
 
@@ -27,11 +26,10 @@ public:
     static USaveGSubSystem* Get(const UGameInstance* GameInstance);
 
 #pragma endregion
-    
+
 #pragma region Actions
 
 public:
-
     /** @public Creates or updates data for all properties of an object **/
     UFUNCTION(BlueprintCallable)
     void UpdateSaveData(FString Tag, UObject* SavedObject);
@@ -61,12 +59,10 @@ public:
     bool IsActionDataProcess() { return ActionDataAsyncTask.Get() != nullptr || RequestActionData.Num() != 0; }
 
 protected:
-
     /** @protected  **/
     virtual FString GenerateSaveFileName();
 
 private:
-
     /** @private **/
     void NextRequestActionData();
 
@@ -79,29 +75,50 @@ private:
 #pragma region Signatures
 
 public:
+    /** @public Signature on delegate OnActionLoadComplete
+     * Use macro UFUNCTION()
+     * Example: BindOnActionLoadComplete(this, &ThisClass::SomeFuncName)
+     */
+    template <typename FuncClass>
+    void BindOnActionLoadComplete(FuncClass* Object, void (FuncClass::*Func)(const FString&, UObject*))
+    {
+        BindDelegateActionSaveGSystemSignature(OnActionLoadComplete, Object, Func);
+    }
 
-    /** @public **/
-    const FActionSaveGSystemSignature& GetActionLoadCompleteSignature() const { return OnActionLoadComplete; }
-
-    /** @public **/
-    const FActionSaveGSystemSignature& GetActionSaveCompleteSignature() const { return OnActionSaveComplete; }
+    /** @public Signature on delegate OnActionSaveComplete
+     * Use macro UFUNCTION()
+     * Example: BindOnActionSaveComplete(this, &ThisClass::SomeFuncName)
+     */
+    template <typename FuncClass>
+    void BindOnActionSaveComplete(FuncClass* Object, void (FuncClass::*Func)(const FString&, UObject*))
+    {
+        BindDelegateActionSaveGSystemSignature(OnActionSaveComplete, Object, Func);
+    }
 
 protected:
+    /** @protected Template function to bind a delegate with a specific signature FActionSaveGSystemSignature with Arg: const FString&,
+     * UObject* */
+    template <typename FuncClass>
+    void BindDelegateActionSaveGSystemSignature(
+        FActionSaveGSystemSignature& Delegate, FuncClass* Object, void (FuncClass::*Func)(const FString&, UObject*))
+    {
+        if (CLOG_SAVE_G_SYSTEM(Object == nullptr, "Object is nullptr")) return;
+        if (CLOG_SAVE_G_SYSTEM(Func == nullptr, "Func is nullptr")) return;
+        Delegate.AddUniqueDynamic(Object, Func);
+    }
 
-    /** @protected **/
-    UPROPERTY(BlueprintAssignable)
+private:
+    /** @private **/
     FActionSaveGSystemSignature OnActionLoadComplete;
 
-    /** @protected **/
-    UPROPERTY(BlueprintAssignable)
+    /** @private **/
     FActionSaveGSystemSignature OnActionSaveComplete;
 
 #pragma endregion
-    
+
 #pragma region Data
 
 private:
-
     /** @private **/
     TWeakObjectPtr<UUpdateSaveDataAsyncTask> ActionDataAsyncTask;
 

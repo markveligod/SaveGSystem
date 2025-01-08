@@ -7,21 +7,16 @@
 #include "SaveGSystem/Interface/SaveGInterface.h"
 #include "SaveGSystem/SubSystem/SaveGSubSystem.h"
 
-
 inline UWorld* GetTestGameWorld()
 {
     const TIndirectArray<FWorldContext>& WorldContexts = GEngine->GetWorldContexts();
     auto FindElem = Algo::FindByPredicate(WorldContexts, [](const FWorldContext& Context)
-    {
-        return (Context.WorldType == EWorldType::PIE || Context.WorldType == EWorldType::Game) && Context.World();
-    });
+        { return (Context.WorldType == EWorldType::PIE || Context.WorldType == EWorldType::Game) && Context.World(); });
 
     if (!FindElem)
     {
-        FindElem = Algo::FindByPredicate(WorldContexts, [](const FWorldContext& Context)
-        {
-            return Context.WorldType == EWorldType::Editor && Context.World();
-        });
+        FindElem = Algo::FindByPredicate(
+            WorldContexts, [](const FWorldContext& Context) { return Context.WorldType == EWorldType::Editor && Context.World(); });
     }
 
     return FindElem ? FindElem->World() : nullptr;
@@ -59,15 +54,14 @@ class FWorldSimulationTicker
 public:
     virtual ~FWorldSimulationTicker() = default;
 
-    FWorldSimulationTicker(const TFunction<bool()>& InCondition, float InTime, UWorld* World): Condition(InCondition),
-    MaxSimulatedTime(InTime), WeakWorld(World)
+    FWorldSimulationTicker(const TFunction<bool()>& InCondition, float InTime, UWorld* World)
+        : Condition(InCondition), MaxSimulatedTime(InTime), WeakWorld(World)
     {
-        
     }
 
     virtual void Run()
     {
-        const float DeltaTime = 0.016f; // Simulate 60 FPS
+        const float DeltaTime = 0.016f;  // Simulate 60 FPS
         float ElapsedTime = 0.0f;
         bool bBreak = false;
         while (ElapsedTime < MaxSimulatedTime)
@@ -87,6 +81,7 @@ public:
             FPlatformProcess::Sleep(DeltaTime);
         }
     }
+
 private:
     TFunction<bool()> Condition;
     float MaxSimulatedTime{6.0f};
@@ -110,10 +105,10 @@ public:
         if (Condition())
         {
             OnComplete();
-            return true; // Done
+            return true;  // Done
         }
 
-        return false; // Keep waiting
+        return false;  // Keep waiting
     }
 };
 
@@ -150,10 +145,7 @@ struct FInitTestWorld
         WeakSaveGSubSystem.Reset();
     }
 
-    bool IsValid() const
-    {
-        return WeakWorld.IsValid() && WeakGameInstance.IsValid() && WeakSaveGSubSystem.IsValid();
-    }
+    bool IsValid() const { return WeakWorld.IsValid() && WeakGameInstance.IsValid() && WeakSaveGSubSystem.IsValid(); }
 
     TWeakObjectPtr<UWorld> WeakWorld;
     TWeakObjectPtr<UGameInstance> WeakGameInstance;
@@ -170,19 +162,22 @@ class USaveGBaseTestObject : public UObject, public ISaveGInterface
     GENERATED_BODY()
 
 public:
-
     bool bActionPreSave{false};
     bool bActionPostSave{false};
     bool bActionPreLoad{false};
     bool bActionPostLoad{false};
 
-    virtual void PreSave_Implementation() override { bActionPreSave = true;}
-    virtual void PostSave_Implementation() override { bActionPostSave = true;}
+    virtual void PreSave_Implementation() override { bActionPreSave = true; }
+    virtual void PostSave_Implementation() override { bActionPostSave = true; }
     virtual void PreLoad_Implementation() override { bActionPreLoad = true; }
-    virtual void PostLoad_Implementation() override { bActionPostLoad = true;}
+    virtual void PostLoad_Implementation() override { bActionPostLoad = true; }
 
     bool IsSaved() const { return bActionPostSave; }
     bool IsLoaded() const { return bActionPostLoad; }
+
+    virtual void Generate() {}
+    virtual bool IsValidValue() { return true; }
+    virtual void Reset() {}
 };
 
 UCLASS()
@@ -190,11 +185,14 @@ class SAVEGSYSTEM_API USaveGTestBoolObject : public USaveGBaseTestObject
 {
     GENERATED_BODY()
 
-
-public:
-
+private:
     UPROPERTY(SaveGame)
     bool bTestBool{false};
+
+public:
+    virtual void Generate() override { bTestBool = true; }
+    virtual bool IsValidValue() override { return bTestBool; }
+    virtual void Reset() override { bTestBool = false; }
 };
 
 UCLASS()
@@ -202,9 +200,7 @@ class SAVEGSYSTEM_API USaveGTestNumericObject : public USaveGBaseTestObject
 {
     GENERATED_BODY()
 
-
-public:
-
+private:
     UPROPERTY(SaveGame)
     int8 Int8{0};
 
@@ -232,7 +228,8 @@ public:
     UPROPERTY(SaveGame)
     double Double{0.0};
 
-    void GenerateNumeric()
+public:
+    virtual void Generate() override
     {
         Int8 = FMath::RandRange(1, INT8_MAX);
         Int16 = FMath::RandRange(1, INT16_MAX);
@@ -245,7 +242,7 @@ public:
         Double = FMath::RandRange(1.0, MAX_dbl);
     }
 
-    bool IsHaveNoneZeroValue() const
+    virtual bool IsValidValue() override
     {
         if (Int8 == 0) return false;
         if (Int16 == 0) return false;
@@ -259,7 +256,7 @@ public:
         return true;
     }
 
-    void ResetNumeric()
+    virtual void Reset() override
     {
         Int8 = 0;
         Int16 = 0;
@@ -270,5 +267,89 @@ public:
         UInt64 = 0;
         Float = 0.0f;
         Double = 0.0;
+    }
+};
+
+UCLASS()
+class SAVEGSYSTEM_API USaveGTestStringObject : public USaveGBaseTestObject
+{
+    GENERATED_BODY()
+
+private:
+    UPROPERTY(SaveGame)
+    FString Str{};
+
+    UPROPERTY(SaveGame)
+    FName Name{NAME_None};
+
+    UPROPERTY(SaveGame)
+    FText Text{};
+
+public:
+    virtual void Generate() override
+    {
+        Str = TEXT("Hello World !!!");
+        Name = FName(Str);
+        Text = FText::FromString(Str);
+    }
+
+    virtual bool IsValidValue() override
+    {
+        if (Str.IsEmpty()) return false;
+        if (Name.IsNone()) return false;
+        if (Text.IsEmpty()) return false;
+        return true;
+    }
+
+    virtual void Reset() override
+    {
+        Str.Empty();
+        Name = NAME_None;
+        Text = FText::FromString(Str);
+    }
+};
+
+UCLASS()
+class SAVEGSYSTEM_API USaveGTestObjectHandle : public USaveGBaseTestObject
+{
+    GENERATED_BODY()
+
+private:
+    UPROPERTY(SaveGame)
+    TSoftClassPtr<UClass> SoftClass{nullptr};
+
+    UPROPERTY(SaveGame)
+    TSoftObjectPtr<UObject> SoftObject{nullptr};
+
+    UPROPERTY(SaveGame)
+    FSoftClassPath PathClass{};
+
+    UPROPERTY(SaveGame)
+    FSoftObjectPath PathObject{};
+
+public:
+    virtual void Generate() override
+    {
+        SoftClass = AActor::StaticClass();
+        SoftObject = AActor::StaticClass();
+        PathClass = AActor::StaticClass();
+        PathObject = AActor::StaticClass();
+    }
+
+    virtual bool IsValidValue() override
+    {
+        if (SoftClass.GetAssetName().IsEmpty()) return false;
+        if (SoftObject.GetAssetName().IsEmpty()) return false;
+        if (PathClass.GetAssetName().IsEmpty()) return false;
+        if (PathObject.GetAssetName().IsEmpty()) return false;
+        return true;
+    }
+
+    virtual void Reset() override
+    {
+        SoftClass.Reset();
+        SoftObject.Reset();
+        PathClass.Reset();
+        PathObject.Reset();
     }
 };

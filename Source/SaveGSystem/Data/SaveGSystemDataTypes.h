@@ -64,15 +64,9 @@ struct FInitDataAsyncTask_SaveGSystem
     TWeakObjectPtr<> Object{nullptr};
     FString JsonSaveData{};
 
-    UObject* GetObject() const
-    {
-        return Object.Get();
-    }
+    UObject* GetObject() const { return Object.Get(); }
 
-    UClass* GetObjectClass() const
-    {
-        return Object.IsValid() ? Object->GetClass() : nullptr;
-    }
+    UClass* GetObjectClass() const { return Object.IsValid() ? Object->GetClass() : nullptr; }
 
     bool IsValid() const
     {

@@ -66,7 +66,7 @@ TSharedPtr<FJsonObject> USaveGLibrary::ConvertStringToJsonObject(const FString& 
 TArray<uint8> USaveGLibrary::ConvertStringToByte(const FString& JsonString)
 {
     TArray<uint8> ByteArray;
-    FTCHARToUTF8 Converter(*JsonString); // Convert TCHAR to UTF-8
+    FTCHARToUTF8 Converter(*JsonString);  // Convert TCHAR to UTF-8
     ByteArray.Append((const uint8*)(Converter.Get()), Converter.Length());
     return ByteArray;
 }
@@ -396,59 +396,7 @@ bool USaveGLibrary::DeserializeNumericProperty(FProperty* Property, void* Object
 
 bool USaveGLibrary::SerializeObjectProperty(FProperty* Property, const void* ObjectData, TSharedPtr<FJsonObject> JsonObject)
 {
-    if (const FClassProperty* ClassProperty = CastField<FClassProperty>(Property))
-    {
-        FClassProperty::TCppType ClassValue = ClassProperty->GetPropertyValue_InContainer(ObjectData);
-        if (ClassValue.Get())
-        {
-            // Serialize the class name
-            JsonObject->SetStringField(Property->GetName(), ClassValue->GetName());
-            return true;
-        }
-    }
-    else if (FObjectProperty* ObjectProperty = CastField<FObjectProperty>(Property))
-    {
-        if (const UObject* ObjectValue = ObjectProperty->GetObjectPropertyValue_InContainer(ObjectData))
-        {
-            const FString ObjectName = ObjectValue->GetName();
-            JsonObject->SetStringField(Property->GetName(), ObjectName);
-
-            // Serialize the object's properties recursively
-            TSharedPtr<FJsonObject> ObjectJson = MakeShared<FJsonObject>();
-            TArray<FProperty*> AllSaveProperty = GetAllPropertyHasMetaSaveGame(ObjectValue);
-            for (FProperty* SubProperty : AllSaveProperty)
-            {
-                if (!SubProperty) continue;
-                SerializeSubProperty(SubProperty, ObjectValue, ObjectJson);
-            }
-
-            JsonObject->SetObjectField(Property->GetName(), ObjectJson);
-            return true;
-        }
-    }
-    else if (FWeakObjectProperty* WeakObjectProperty = CastField<FWeakObjectProperty>(Property))
-    {
-        FWeakObjectPtr WeakObject = WeakObjectProperty->GetPropertyValue_InContainer(ObjectData);
-
-        if (WeakObject.IsValid())
-        {
-            // Serialize basic information about the referenced object
-            JsonObject->SetStringField(Property->GetName(), WeakObject.Get()->GetName());
-            return true;
-        }
-    }
-    else if (FLazyObjectProperty* LazyObjectProperty = CastField<FLazyObjectProperty>(Property))
-    {
-        FLazyObjectPtr LazyObject = LazyObjectProperty->GetPropertyValue_InContainer(ObjectData);
-
-        if (UObject* ResolvedObject = LazyObject.Get())
-        {
-            // Serialize basic information about the resolved object
-            JsonObject->SetStringField(Property->GetName(), ResolvedObject->GetName());
-            return true;
-        }
-    }
-    else if (FSoftClassProperty* SoftClassProperty = CastField<FSoftClassProperty>(Property))
+    if (FSoftClassProperty* SoftClassProperty = CastField<FSoftClassProperty>(Property))
     {
         FSoftObjectPtr SoftClass = SoftClassProperty->GetPropertyValue_InContainer(ObjectData);
 
@@ -480,40 +428,7 @@ bool USaveGLibrary::SerializeObjectProperty(FProperty* Property, const void* Obj
 
 bool USaveGLibrary::DeserializeObjectProperty(FProperty* Property, void* ObjectData, TSharedPtr<FJsonObject> JsonObject)
 {
-    if (FClassProperty* ClassProperty = CastField<FClassProperty>(Property))
-    {
-        FString ClassPath;
-        if (JsonObject->TryGetStringField(Property->GetName(), ClassPath))
-        {
-            UClass* LoadedClass = StaticLoadClass(UObject::StaticClass(), nullptr, *ClassPath);
-            if (LoadedClass)
-            {
-                ClassProperty->SetPropertyValue_InContainer(ObjectData, LoadedClass);
-                return true;
-            }
-        }
-    }
-    else if (FObjectProperty* ObjectProperty = CastField<FObjectProperty>(Property))
-    {
-        const TSharedPtr<FJsonObject>* ObjectJson;
-        if (JsonObject->TryGetObjectField(Property->GetName(), ObjectJson))
-        {
-            UObject* SubObject = ObjectProperty->GetObjectPropertyValue_InContainer(ObjectData);
-            if (!SubObject)
-            {
-                SubObject = NewObject<UObject>(GetTransientPackage(), ObjectProperty->PropertyClass);
-                ObjectProperty->SetObjectPropertyValue_InContainer(ObjectData, SubObject);
-            }
-
-            for (TFieldIterator<FProperty> It(SubObject->GetClass()); It; ++It)
-            {
-                FProperty* SubProperty = *It;
-                DeserializeSubProperty(SubProperty, SubObject, JsonObject);
-            }
-            return true;
-        }
-    }
-    else if (FSoftClassProperty* SoftClassProperty = CastField<FSoftClassProperty>(Property))
+    if (FSoftClassProperty* SoftClassProperty = CastField<FSoftClassProperty>(Property))
     {
         FString AssetPath;
         if (JsonObject->TryGetStringField(Property->GetName(), AssetPath))
@@ -531,45 +446,6 @@ bool USaveGLibrary::DeserializeObjectProperty(FProperty* Property, void* ObjectD
             const TProperty<FSoftObjectPtr, FObjectPropertyBase>::TCppType SoftObject(AssetPath);
             SoftObjectProperty->SetPropertyValue_InContainer(ObjectData, SoftObject);
             return true;
-        }
-    }
-    else if (FWeakObjectProperty* WeakObjectProperty = CastField<FWeakObjectProperty>(Property))
-    {
-        FString ObjectPath;
-        if (JsonObject->TryGetStringField(Property->GetName(), ObjectPath))
-        {
-            UObject* LoadedObject = FindObject<UObject>(nullptr, *ObjectPath);
-            if (!LoadedObject)
-            {
-                LoadedObject = StaticLoadObject(UObject::StaticClass(), nullptr, *ObjectPath);
-            }
-
-            if (LoadedObject)
-            {
-                FWeakObjectPtr WeakObject = LoadedObject;
-                WeakObjectProperty->SetPropertyValue_InContainer(ObjectData, WeakObject);
-                return true;
-            }
-        }
-    }
-    else if (FLazyObjectProperty* LazyObjectProperty = CastField<FLazyObjectProperty>(Property))
-    {
-        FString ObjectPath;
-        if (JsonObject->TryGetStringField(Property->GetName(), ObjectPath))
-        {
-            UObject* LoadedObject = FindObject<UObject>(nullptr, *ObjectPath);
-            if (!LoadedObject)
-            {
-                LoadedObject = StaticLoadObject(UObject::StaticClass(), nullptr, *ObjectPath);
-            }
-
-            if (LoadedObject)
-            {
-                FLazyObjectPtr LazyObject;
-                LazyObject = LoadedObject;
-                LazyObjectProperty->SetPropertyValue_InContainer(ObjectData, LazyObject);
-                return true;
-            }
         }
     }
 
@@ -687,6 +563,7 @@ void USaveGLibrary::SerializeSubProperty(FProperty* SubProperty, const void* Obj
     if (SerializeBoolProperty(SubProperty, ObjectData, JsonObject)) return;
     if (SerializeStringProperty(SubProperty, ObjectData, JsonObject)) return;
     if (SerializeNumericProperty(SubProperty, ObjectData, JsonObject)) return;
+    if (SerializeObjectProperty(SubProperty, ObjectData, JsonObject)) return;
     if (SerializeStructProperty(SubProperty, ObjectData, JsonObject)) return;
     if (SerializeArrayProperty(SubProperty, ObjectData, JsonObject)) return;
 }
@@ -696,6 +573,7 @@ void USaveGLibrary::DeserializeSubProperty(FProperty* SubProperty, void* ObjectD
     if (DeserializeBoolProperty(SubProperty, ObjectData, JsonObject)) return;
     if (DeserializeStringProperty(SubProperty, ObjectData, JsonObject)) return;
     if (DeserializeNumericProperty(SubProperty, ObjectData, JsonObject)) return;
+    if (DeserializeObjectProperty(SubProperty, ObjectData, JsonObject)) return;
     if (DeserializeStructProperty(SubProperty, ObjectData, JsonObject)) return;
     if (DeserializeArrayProperty(SubProperty, ObjectData, JsonObject)) return;
 }

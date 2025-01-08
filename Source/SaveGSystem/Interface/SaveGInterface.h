@@ -14,7 +14,7 @@ class USaveGInterface : public UInterface
 };
 
 /**
- * 
+ *
  */
 class SAVEGSYSTEM_API ISaveGInterface
 {
@@ -22,7 +22,6 @@ class SAVEGSYSTEM_API ISaveGInterface
 
     // Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "SaveGInterface")
     void PreSave();
     virtual void PreSave_Implementation() {}
