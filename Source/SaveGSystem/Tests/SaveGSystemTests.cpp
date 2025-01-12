@@ -44,6 +44,13 @@ bool FSaveGSystemBoolTest::RunTest(const FString& Parameters)
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+    FSaveGSystemByteTest, "SaveGSystem.ByteTest", EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+bool FSaveGSystemByteTest::RunTest(const FString& Parameters)
+{
+    return SaveGSystemTests::RunSaveGSystemTest<USaveGTestByteObject>("TestByteObject", this);
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FSaveGSystemNumericTest, "SaveGSystem.NumericTest", EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
 bool FSaveGSystemNumericTest::RunTest(const FString& Parameters)
 {
@@ -62,6 +69,20 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FSaveGSystemObjectTest::RunTest(const FString& Parameters)
 {
     return SaveGSystemTests::RunSaveGSystemTest<USaveGTestObjectHandle>("TestObjectHandle", this);
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+    FSaveGSystemStructTest, "SaveGSystem.StructTest", EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+bool FSaveGSystemStructTest::RunTest(const FString& Parameters)
+{
+    return SaveGSystemTests::RunSaveGSystemTest<USaveGTestStructObject>("TestStructObject", this);
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSaveGSystemArrayStructTestTest, "SaveGSystem.ArrayStructTest",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+bool FSaveGSystemArrayStructTestTest::RunTest(const FString& Parameters)
+{
+    return SaveGSystemTests::RunSaveGSystemTest<USaveGTestArrayStructObject>("TestArrayStructTestObject", this);
 }
 
 #endif

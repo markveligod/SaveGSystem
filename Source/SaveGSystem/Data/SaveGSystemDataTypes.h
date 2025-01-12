@@ -55,7 +55,7 @@ enum class ETaskAction_SaveGSystem : uint8
 
 /** --- | STRUCT | --- **/
 
-/** @struct Data for the operation of asynktask **/
+/** @struct Data for the operation of asynс task **/
 struct FInitDataAsyncTask_SaveGSystem
 {
     ETaskAction_SaveGSystem Action{ETaskAction_SaveGSystem::None};

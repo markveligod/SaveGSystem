@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "IO/IoContainerHeader.h"
 #include "Kismet/BlueprintAsyncActionBase.h"
 #include "SaveGSystem/Data/SaveGSystemDataTypes.h"
 #include "UpdateSaveDataAsyncTask.generated.h"

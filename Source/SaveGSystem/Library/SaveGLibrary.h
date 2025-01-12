@@ -7,11 +7,12 @@
 #include "SaveGLibrary.generated.h"
 
 /**
- * Library for working with SaveGSystem
- * 1. Data compression
- * 2. Data read/write
- * 3. Find Property
- * 4. Serialize Property String/Numeric/Object/Bool/Struct/Array
+ * Library for working with SaveGSystem.
+ * Provides functionality for:
+ * 1. Data compression and decompression.
+ * 2. Reading and writing data.
+ * 3. Finding properties with specific metadata.
+ * 4. Serializing and deserializing properties (String, Byte, Enum, Numeric, Object, Bool, Struct, Array, Map).
  */
 UCLASS()
 class SAVEGSYSTEM_API USaveGLibrary : public UBlueprintFunctionLibrary
@@ -19,80 +20,92 @@ class SAVEGSYSTEM_API USaveGLibrary : public UBlueprintFunctionLibrary
     GENERATED_BODY()
 
 public:
-    /** @public  **/
+    /** @public Compresses a byte array using a compression algorithm. **/
     UFUNCTION(BlueprintCallable, Category = "SaveGLibrary | Compression")
     static bool CompressData(TArray<uint8>& SomeData, TArray<uint8>& OutData);
 
-    /** @public  **/
+    /** @public Decompresses a byte array that was previously compressed. **/
     UFUNCTION(BlueprintCallable, Category = "SaveGLibrary | Compression")
     static bool DecompressData(const TArray<uint8>& CompressedData, TArray<uint8>& OutData);
 
-    /** @public  **/
+    /** @public Converts a JSON object to a string representation. **/
     static FString ConvertJsonObjectToString(const TSharedPtr<FJsonObject>& JsonObject);
 
-    /** @public  **/
+    /** @public Converts a JSON string to a JSON object. **/
     static TSharedPtr<FJsonObject> ConvertStringToJsonObject(const FString& JsonString);
 
-    /** @public  **/
+    /** @public Converts a string to a byte array. **/
     static TArray<uint8> ConvertStringToByte(const FString& JsonString);
 
-    /** @public  **/
+    /** @public Converts a byte array to a string. **/
     static FString ConvertByteToString(const TArray<uint8>& ByteArray);
 
-    /** @public  **/
+    /** @public Retrieves all properties of an object that have the "SaveGame" metadata. **/
     static TArray<FProperty*> GetAllPropertyHasMetaSaveGame(const UObject* ObjectData);
 
-    /** @public  **/
+    /** @public Retrieves all properties of an object that have a specific custom metadata. **/
     static TArray<FProperty*> GetAllPropertyHasCustomMeta(const UObject* ObjectData, const FName& MetaName);
 
-    /** @public  **/
+    /** @public Serializes a boolean property to a JSON object. **/
     static bool SerializeBoolProperty(FProperty* Property, const void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
-    /** @public  **/
+    /** @public Deserializes a boolean property from a JSON object. **/
     static bool DeserializeBoolProperty(FProperty* Property, void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
-    /** @public  **/
+    /** @public Serializes a byte property (or enum) to a JSON object. **/
     static bool SerializeByteProperty(FProperty* Property, const void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
-    /** @public  **/
+    /** @public Deserializes a byte property (or enum) from a JSON object. **/
     static bool DeserializeByteProperty(FProperty* Property, void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
-    /** @public  **/
+    /** @public Serializes a string, name, or text property to a JSON object. **/
     static bool SerializeStringProperty(FProperty* Property, const void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
-    /** @public  **/
+    /** @public Deserializes a string, name, or text property from a JSON object. **/
     static bool DeserializeStringProperty(FProperty* Property, void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
-    /** @public  **/
+    /** @public Serializes a numeric property (int, float, double, etc.) to a JSON object. **/
     static bool SerializeNumericProperty(FProperty* Property, const void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
-    /** @public  **/
+    /** @public Deserializes a numeric property (int, float, double, etc.) from a JSON object. **/
     static bool DeserializeNumericProperty(FProperty* Property, void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
-    /** @public  **/
+    /** @public Serializes an object property (UObject, soft object, etc.) to a JSON object. **/
     static bool SerializeObjectProperty(FProperty* Property, const void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
-    /** @public  **/
+    /** @public Deserializes an object property (UObject, soft object, etc.) from a JSON object. **/
     static bool DeserializeObjectProperty(FProperty* Property, void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
-    /** @public  **/
+    /** @public Serializes a struct property to a JSON object. **/
     static bool SerializeStructProperty(FProperty* Property, const void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
-    /** @public  **/
+    /** @public Deserializes a struct property from a JSON object. **/
     static bool DeserializeStructProperty(FProperty* Property, void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
-    /** @public  **/
+    /** @public Serializes an array property to a JSON object. **/
     static bool SerializeArrayProperty(FProperty* Property, const void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
-    /** @public  **/
+    /** @public Deserializes an array property from a JSON object. **/
     static bool DeserializeArrayProperty(FProperty* Property, void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
-    /** @public  **/
+    /** @public Serializes a map key based on its property type. **/
+    static FString SerializeMapKey(FProperty* KeyProperty, const void* KeyPtr);
+
+    /** @public Deserializes a map key based on its property type. **/
+    static bool DeserializeMapKey(FProperty* KeyProperty, void* KeyPtr, const FString& KeyString);
+
+    /** @public Serializes a map property to a JSON object. **/
+    static bool SerializeMapProperty(FProperty* Property, const void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
+
+    /** @public Deserializes a map property from a JSON object. **/
+    static bool DeserializeMapProperty(FProperty* Property, void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
+
+    /** @public Serializes a sub-property (recursively handles nested properties). **/
     static void SerializeSubProperty(FProperty* SubProperty, const void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
-    /** @public  **/
+    /** @public Deserializes a sub-property (recursively handles nested properties). **/
     static void DeserializeSubProperty(FProperty* SubProperty, void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
-    /** @public **/
+    /** @public Validates a file name by removing invalid characters. **/
     static FString ValidateFileName(const FString& FileName);
 };
