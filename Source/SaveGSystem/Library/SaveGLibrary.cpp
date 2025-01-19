@@ -136,6 +136,28 @@ bool USaveGLibrary::DeserializeBoolProperty(FProperty* Property, void* ObjectDat
     return false;
 }
 
+bool USaveGLibrary::SerializeBoolProperty(FProperty* Property, const void* ObjectData, FString& Str)
+{
+    if (const FBoolProperty* BoolProperty = CastField<FBoolProperty>(Property))
+    {
+        const bool Value = BoolProperty->GetPropertyValue_InContainer(ObjectData);
+        Str = Value ? "true" : "false";
+        return true;
+    }
+    return false;
+}
+
+bool USaveGLibrary::DeserializeBoolProperty(FProperty* Property, void* ObjectData, const FString& Str)
+{
+    if (const FBoolProperty* BoolProperty = CastField<FBoolProperty>(Property))
+    {
+        const bool bValue = Str == "true";
+        BoolProperty->SetPropertyValue_InContainer(ObjectData, bValue);
+        return true;
+    }
+    return false;
+}
+
 bool USaveGLibrary::SerializeByteProperty(FProperty* Property, const void* ObjectData, TSharedPtr<FJsonObject> JsonObject)
 {
     if (FEnumProperty* EnumProperty = CastField<FEnumProperty>(Property))
@@ -170,7 +192,7 @@ bool USaveGLibrary::DeserializeByteProperty(FProperty* Property, void* ObjectDat
         if (Enum)
         {
             FNumericProperty* UnderlyingProperty = EnumProperty->GetUnderlyingProperty();
-            int64 EnumValue;
+            int64 EnumValue = 0;
             if (UnderlyingProperty && JsonObject->TryGetNumberField(Property->GetName(), EnumValue))
             {
                 void* PropertyValuePtr = EnumProperty->ContainerPtrToValuePtr<void>(ObjectData);
@@ -187,6 +209,58 @@ bool USaveGLibrary::DeserializeByteProperty(FProperty* Property, void* ObjectDat
             ByteProperty->SetPropertyValue_InContainer(ObjectData, static_cast<uint8>(Value));
             return true;
         }
+    }
+    return false;
+}
+
+bool USaveGLibrary::SerializeByteProperty(FProperty* Property, const void* ObjectData, FString& Str)
+{
+    if (FEnumProperty* EnumProperty = CastField<FEnumProperty>(Property))
+    {
+        UEnum* Enum = EnumProperty->GetEnum();
+        FNumericProperty* UnderlyingProperty = EnumProperty->GetUnderlyingProperty();
+        if (Enum && UnderlyingProperty)
+        {
+            // Cast to FNumericProperty and get the enum value
+            const FNumericProperty* NumericProperty = CastFieldChecked<FNumericProperty>(UnderlyingProperty);
+            const void* PropertyValuePtr = EnumProperty->ContainerPtrToValuePtr<void>(ObjectData);
+            int64 EnumValue = NumericProperty->GetSignedIntPropertyValue(PropertyValuePtr);
+            Str = FString::FromInt(EnumValue);
+            return true;
+        }
+    }
+    if (const FByteProperty* ByteProperty = CastField<FByteProperty>(Property))
+    {
+        // If there's no associated UEnum, treat it as a plain byte
+        uint8 Value = ByteProperty->GetPropertyValue_InContainer(ObjectData);
+        Str = FString::FromInt(Value);
+        return true;
+    }
+    return false;
+}
+
+bool USaveGLibrary::DeserializeByteProperty(FProperty* Property, void* ObjectData, const FString& Str)
+{
+    if (FEnumProperty* EnumProperty = CastField<FEnumProperty>(Property))
+    {
+        UEnum* Enum = EnumProperty->GetEnum();
+        if (Enum)
+        {
+            FNumericProperty* UnderlyingProperty = EnumProperty->GetUnderlyingProperty();
+            int64 EnumValue = FCString::Atoi64(*Str);
+            if (UnderlyingProperty)
+            {
+                void* PropertyValuePtr = EnumProperty->ContainerPtrToValuePtr<void>(ObjectData);
+                UnderlyingProperty->SetIntPropertyValue(PropertyValuePtr, EnumValue);
+                return true;
+            }
+        }
+    }
+    else if (const FByteProperty* ByteProperty = CastField<FByteProperty>(Property))
+    {
+        int32 Value = FCString::Atoi(*Str);
+        ByteProperty->SetPropertyValue_InContainer(ObjectData, static_cast<uint8>(Value));
+        return true;
     }
     return false;
 }
@@ -242,6 +316,49 @@ bool USaveGLibrary::DeserializeStringProperty(FProperty* Property, void* ObjectD
             TextProperty->SetPropertyValue_InContainer(ObjectData, FText::FromString(Value));
             return true;
         }
+    }
+    return false;
+}
+
+bool USaveGLibrary::SerializeStringProperty(FProperty* Property, const void* ObjectData, FString& Str)
+{
+    if (const FStrProperty* StrProperty = CastField<FStrProperty>(Property))
+    {
+        const FString Value = StrProperty->GetPropertyValue_InContainer(ObjectData);
+        Str = Value;
+        return true;
+    }
+    if (const FNameProperty* NameProperty = CastField<FNameProperty>(Property))
+    {
+        const FName Value = NameProperty->GetPropertyValue_InContainer(ObjectData);
+        Str = Value.ToString();
+        return true;
+    }
+    if (const FTextProperty* TextProperty = CastField<FTextProperty>(Property))
+    {
+        const FText Value = TextProperty->GetPropertyValue_InContainer(ObjectData);
+        Str = Value.ToString();
+        return true;
+    }
+    return false;
+}
+
+bool USaveGLibrary::DeserializeStringProperty(FProperty* Property, void* ObjectData, const FString& Str)
+{
+    if (FStrProperty* StrProperty = CastField<FStrProperty>(Property))
+    {
+        StrProperty->SetPropertyValue_InContainer(ObjectData, Str);
+        return true;
+    }
+    if (FNameProperty* NameProperty = CastField<FNameProperty>(Property))
+    {
+        NameProperty->SetPropertyValue_InContainer(ObjectData, FName(*Str));
+        return true;
+    }
+    if (FTextProperty* TextProperty = CastField<FTextProperty>(Property))
+    {
+        TextProperty->SetPropertyValue_InContainer(ObjectData, FText::FromString(Str));
+        return true;
     }
     return false;
 }
@@ -391,6 +508,124 @@ bool USaveGLibrary::DeserializeNumericProperty(FProperty* Property, void* Object
     return false;
 }
 
+bool USaveGLibrary::SerializeNumericProperty(FProperty* Property, const void* ObjectData, FString& Str)
+{
+    if (const FInt8Property* Int8Property = CastField<FInt8Property>(Property))
+    {
+        const int8 Value = Int8Property->GetPropertyValue_InContainer(ObjectData);
+        Str = FString::Printf(TEXT("%i"), Value);
+        return true;
+    }
+    if (const FUInt16Property* UInt16Property = CastField<FUInt16Property>(Property))
+    {
+        const uint16 Value = UInt16Property->GetPropertyValue_InContainer(ObjectData);
+        Str = FString::Printf(TEXT("%i"), Value);
+        return true;
+    }
+    if (const FInt16Property* Int16Property = CastField<FInt16Property>(Property))
+    {
+        const int16 Value = Int16Property->GetPropertyValue_InContainer(ObjectData);
+        Str = FString::Printf(TEXT("%i"), Value);
+        return true;
+    }
+    if (const FIntProperty* IntProperty = CastField<FIntProperty>(Property))
+    {
+        const int32 Value = IntProperty->GetPropertyValue_InContainer(ObjectData);
+        Str = FString::Printf(TEXT("%i"), Value);
+        return true;
+    }
+    if (const FUInt32Property* UInt32Property = CastField<FUInt32Property>(Property))
+    {
+        const uint32 Value = UInt32Property->GetPropertyValue_InContainer(ObjectData);
+        Str = FString::Printf(TEXT("%i"), Value);
+        return true;
+    }
+    if (const FInt64Property* Int64Property = CastField<FInt64Property>(Property))
+    {
+        const int64 Value = Int64Property->GetPropertyValue_InContainer(ObjectData);
+        Str = FString::Printf(TEXT("%lld"), Value);
+        return true;
+    }
+    if (const FUInt64Property* UInt64Property = CastField<FUInt64Property>(Property))
+    {
+        const uint64 Value = UInt64Property->GetPropertyValue_InContainer(ObjectData);
+        Str = FString::Printf(TEXT("%lld"), Value);
+        return true;
+    }
+    if (const FFloatProperty* FloatProperty = CastField<FFloatProperty>(Property))
+    {
+        const float Value = FloatProperty->GetPropertyValue_InContainer(ObjectData);
+        Str = FString::Printf(TEXT("%f"), Value);
+        return true;
+    }
+    if (const FDoubleProperty* DoubleProperty = CastField<FDoubleProperty>(Property))
+    {
+        const double Value = DoubleProperty->GetPropertyValue_InContainer(ObjectData);
+        Str = FString::Printf(TEXT("%f"), Value);
+        return true;
+    }
+    return false;
+}
+
+bool USaveGLibrary::DeserializeNumericProperty(FProperty* Property, void* ObjectData, const FString& Str)
+{
+    if (FInt8Property* Int8Property = CastField<FInt8Property>(Property))
+    {
+        int8 Value = FCString::Atoi(*Str);
+        Int8Property->SetPropertyValue_InContainer(ObjectData, Value);
+        return true;
+    }
+    if (FInt16Property* Int16Property = CastField<FInt16Property>(Property))
+    {
+        int16 Value = FCString::Atoi(*Str);
+        Int16Property->SetPropertyValue_InContainer(ObjectData, Value);
+        return true;
+    }
+    if (FUInt16Property* UInt16Property = CastField<FUInt16Property>(Property))
+    {
+        uint16 Value = FCString::Atoi(*Str);
+        UInt16Property->SetPropertyValue_InContainer(ObjectData, Value);
+        return true;
+    }
+    if (FIntProperty* IntProperty = CastField<FIntProperty>(Property))
+    {
+        int32 Value = FCString::Atoi(*Str);
+        IntProperty->SetPropertyValue_InContainer(ObjectData, Value);
+        return true;
+    }
+    if (const FUInt32Property* UInt32Property = CastField<FUInt32Property>(Property))
+    {
+        uint32 Value = FCString::Atoi(*Str);
+        UInt32Property->SetPropertyValue_InContainer(ObjectData, Value);
+        return true;
+    }
+    if (const FInt64Property* Int64Property = CastField<FInt64Property>(Property))
+    {
+        int64 Value = FCString::Atoi64(*Str);
+        Int64Property->SetPropertyValue_InContainer(ObjectData, Value);
+        return true;
+    }
+    if (const FUInt64Property* UInt64Property = CastField<FUInt64Property>(Property))
+    {
+        uint64 Value = FCString::Atoi64(*Str);
+        UInt64Property->SetPropertyValue_InContainer(ObjectData, Value);
+        return true;
+    }
+    if (FFloatProperty* FloatProperty = CastField<FFloatProperty>(Property))
+    {
+        float Value = FCString::Atof(*Str);
+        FloatProperty->SetPropertyValue_InContainer(ObjectData, Value);
+        return true;
+    }
+    if (FDoubleProperty* DoubleProperty = CastField<FDoubleProperty>(Property))
+    {
+        double Value = FCString::Atod(*Str);
+        DoubleProperty->SetPropertyValue_InContainer(ObjectData, Value);
+        return true;
+    }
+    return false;
+}
+
 bool USaveGLibrary::SerializeObjectProperty(FProperty* Property, const void* ObjectData, TSharedPtr<FJsonObject> JsonObject)
 {
     if (FSoftClassProperty* SoftClassProperty = CastField<FSoftClassProperty>(Property))
@@ -402,6 +637,12 @@ bool USaveGLibrary::SerializeObjectProperty(FProperty* Property, const void* Obj
             // Serialize the class's asset path
             FString ClassPath = SoftClass.ToString();
             JsonObject->SetStringField(Property->GetName(), ClassPath);
+            return true;
+        }
+        else
+        {
+            // If the class reference is invalid, serialize it as null
+            JsonObject->SetField(Property->GetName(), MakeShared<FJsonValueNull>());
             return true;
         }
     }
@@ -416,10 +657,14 @@ bool USaveGLibrary::SerializeObjectProperty(FProperty* Property, const void* Obj
             JsonObject->SetStringField(Property->GetName(), AssetPath);
             return true;
         }
+        else
+        {
+            // If the object reference is invalid, serialize it as null
+            JsonObject->SetField(Property->GetName(), MakeShared<FJsonValueNull>());
+            return true;
+        }
     }
 
-    // If the class reference is null
-    JsonObject->SetField(Property->GetName(), MakeShared<FJsonValueNull>());
     return false;
 }
 
@@ -430,8 +675,14 @@ bool USaveGLibrary::DeserializeObjectProperty(FProperty* Property, void* ObjectD
         FString AssetPath;
         if (JsonObject->TryGetStringField(Property->GetName(), AssetPath))
         {
-            const TProperty<FSoftObjectPtr, FObjectPropertyBase>::TCppType SoftClass(AssetPath);
+            FSoftObjectPtr SoftClass(AssetPath);
             SoftClassProperty->SetPropertyValue_InContainer(ObjectData, SoftClass);
+            return true;
+        }
+        else
+        {
+            // If the field is null, set the property to null
+            SoftClassProperty->SetPropertyValue_InContainer(ObjectData, FSoftObjectPtr());
             return true;
         }
     }
@@ -440,8 +691,14 @@ bool USaveGLibrary::DeserializeObjectProperty(FProperty* Property, void* ObjectD
         FString AssetPath;
         if (JsonObject->TryGetStringField(Property->GetName(), AssetPath))
         {
-            const TProperty<FSoftObjectPtr, FObjectPropertyBase>::TCppType SoftObject(AssetPath);
+            FSoftObjectPtr SoftObject(AssetPath);
             SoftObjectProperty->SetPropertyValue_InContainer(ObjectData, SoftObject);
+            return true;
+        }
+        else
+        {
+            // If the field is null, set the property to null
+            SoftObjectProperty->SetPropertyValue_InContainer(ObjectData, FSoftObjectPtr());
             return true;
         }
     }
@@ -566,126 +823,23 @@ bool USaveGLibrary::DeserializeArrayProperty(FProperty* Property, void* ObjectDa
     return false;
 }
 
-FString USaveGLibrary::SerializeMapKey(FProperty* KeyProperty, const void* KeyPtr)
+FString USaveGLibrary::SerializeMapKeyValue(FProperty* Property, const void* Ptr)
 {
-    if (KeyProperty->IsA<FStrProperty>())
-    {
-        return CastField<FStrProperty>(KeyProperty)->GetPropertyValue(KeyPtr);
-    }
-    else if (KeyProperty->IsA<FNameProperty>())
-    {
-        return CastField<FNameProperty>(KeyProperty)->GetPropertyValue(KeyPtr).ToString();
-    }
-    else if (KeyProperty->IsA<FIntProperty>())
-    {
-        return FString::FromInt(CastField<FIntProperty>(KeyProperty)->GetPropertyValue(KeyPtr));
-    }
-    else if (KeyProperty->IsA<FUInt32Property>())
-    {
-        return FString::FromInt(CastField<FUInt32Property>(KeyProperty)->GetPropertyValue(KeyPtr));
-    }
-    else if (KeyProperty->IsA<FInt64Property>())
-    {
-        return FString::Printf(TEXT("%lld"), CastField<FInt64Property>(KeyProperty)->GetPropertyValue(KeyPtr));
-    }
-    else if (KeyProperty->IsA<FUInt64Property>())
-    {
-        return FString::Printf(TEXT("%llu"), CastField<FUInt64Property>(KeyProperty)->GetPropertyValue(KeyPtr));
-    }
-    else if (KeyProperty->IsA<FFloatProperty>())
-    {
-        return FString::SanitizeFloat(CastField<FFloatProperty>(KeyProperty)->GetPropertyValue(KeyPtr));
-    }
-    else if (KeyProperty->IsA<FDoubleProperty>())
-    {
-        return FString::SanitizeFloat(CastField<FDoubleProperty>(KeyProperty)->GetPropertyValue(KeyPtr));
-    }
-    else if (KeyProperty->IsA<FEnumProperty>())
-    {
-        FEnumProperty* EnumProperty = CastField<FEnumProperty>(KeyProperty);
-        int64 EnumValue = EnumProperty->GetUnderlyingProperty()->GetSignedIntPropertyValue(KeyPtr);
-        return FString::FromInt(EnumValue);
-    }
+    FString Result;
+    if (SerializeBoolProperty(Property, Ptr, Result)) return Result;
+    if (SerializeByteProperty(Property, Ptr, Result)) return Result;
+    if (SerializeStringProperty(Property, Ptr, Result)) return Result;
+    if (SerializeNumericProperty(Property, Ptr, Result)) return Result;
 
-    return FString();
+    return Result;
 }
 
-bool USaveGLibrary::DeserializeMapKey(FProperty* KeyProperty, void* KeyPtr, const FString& KeyString)
+bool USaveGLibrary::DeserializeMapKeyValue(FProperty* Property, void* Ptr, const FString& DataString)
 {
-    if (KeyProperty->IsA<FStrProperty>())
-    {
-        CastField<FStrProperty>(KeyProperty)->SetPropertyValue(KeyPtr, KeyString);
-        return true;
-    }
-    else if (KeyProperty->IsA<FNameProperty>())
-    {
-        CastField<FNameProperty>(KeyProperty)->SetPropertyValue(KeyPtr, FName(*KeyString));
-        return true;
-    }
-    else if (KeyProperty->IsA<FIntProperty>())
-    {
-        int32 KeyValue;
-        if (LexTryParseString(KeyValue, *KeyString))
-        {
-            CastField<FIntProperty>(KeyProperty)->SetPropertyValue(KeyPtr, KeyValue);
-            return true;
-        }
-    }
-    else if (KeyProperty->IsA<FUInt32Property>())
-    {
-        uint32 KeyValue;
-        if (LexTryParseString(KeyValue, *KeyString))
-        {
-            CastField<FUInt32Property>(KeyProperty)->SetPropertyValue(KeyPtr, KeyValue);
-            return true;
-        }
-    }
-    else if (KeyProperty->IsA<FInt64Property>())
-    {
-        int64 KeyValue;
-        if (LexTryParseString(KeyValue, *KeyString))
-        {
-            CastField<FInt64Property>(KeyProperty)->SetPropertyValue(KeyPtr, KeyValue);
-            return true;
-        }
-    }
-    else if (KeyProperty->IsA<FUInt64Property>())
-    {
-        uint64 KeyValue;
-        if (LexTryParseString(KeyValue, *KeyString))
-        {
-            CastField<FUInt64Property>(KeyProperty)->SetPropertyValue(KeyPtr, KeyValue);
-            return true;
-        }
-    }
-    else if (KeyProperty->IsA<FFloatProperty>())
-    {
-        float KeyValue;
-        if (LexTryParseString(KeyValue, *KeyString))
-        {
-            CastField<FFloatProperty>(KeyProperty)->SetPropertyValue(KeyPtr, KeyValue);
-            return true;
-        }
-    }
-    else if (KeyProperty->IsA<FDoubleProperty>())
-    {
-        double KeyValue;
-        if (LexTryParseString(KeyValue, *KeyString))
-        {
-            CastField<FDoubleProperty>(KeyProperty)->SetPropertyValue(KeyPtr, KeyValue);
-            return true;
-        }
-    }
-    else if (KeyProperty->IsA<FEnumProperty>())
-    {
-        FEnumProperty* EnumProperty = CastField<FEnumProperty>(KeyProperty);
-        int64 EnumValue;
-        if (LexTryParseString(EnumValue, *KeyString))
-        {
-            EnumProperty->GetUnderlyingProperty()->SetIntPropertyValue(KeyPtr, EnumValue);
-            return true;
-        }
-    }
+    if (DeserializeBoolProperty(Property, Ptr, DataString)) return true;
+    if (DeserializeByteProperty(Property, Ptr, DataString)) return true;
+    if (DeserializeStringProperty(Property, Ptr, DataString)) return true;
+    if (DeserializeNumericProperty(Property, Ptr, DataString)) return true;
 
     return false;
 }
@@ -694,34 +848,38 @@ bool USaveGLibrary::SerializeMapProperty(FProperty* Property, const void* Object
 {
     if (FMapProperty* MapProperty = CastField<FMapProperty>(Property))
     {
+        // Get the key and value properties
         FProperty* KeyProperty = MapProperty->KeyProp;
         FProperty* ValueProperty = MapProperty->ValueProp;
 
-        TSharedPtr<FJsonObject> MapJsonObject = MakeShared<FJsonObject>();
-
+        // Get the map helper to access the map data
         FScriptMapHelper MapHelper(MapProperty, MapProperty->ContainerPtrToValuePtr<void>(ObjectData));
 
-        for (int32 Index = 0; Index < MapHelper.Num(); Index++)
+        // Create a JSON object to store the map
+        TSharedPtr<FJsonObject> MapJsonObject = MakeShared<FJsonObject>();
+
+        // Iterate over the map and serialize each key-value pair
+        for (int32 Index = 0; Index < MapHelper.Num(); ++Index)
         {
-            if (!MapHelper.IsValidIndex(Index)) continue;
-
-            // Get the key and value pointers
-            const void* KeyPtr = MapHelper.GetKeyPtr(Index);
-            const void* ValuePtr = MapHelper.GetValuePtr(Index);
-
-            // Serialize the key
-            FString KeyString = SerializeMapKey(KeyProperty, KeyPtr);
-
-            // Serialize the value
-            TSharedPtr<FJsonObject> ValueJsonObject = MakeShared<FJsonObject>();
-            SerializeSubProperty(ValueProperty, ValuePtr, ValueJsonObject);
-
-            if (ValueJsonObject.IsValid())
+            if (MapHelper.IsValidIndex(Index))
             {
+                // Get the key and value pointers
+                const void* PairPtr = MapHelper.GetPairPtr(Index);
+                if (!PairPtr) continue;
+
+                // Serialize the key into a string
+                FString KeyString = SerializeMapKeyValue(KeyProperty, PairPtr);
+
+                // Serialize the value into a JSON object
+                TSharedPtr<FJsonObject> ValueJsonObject = MakeShared<FJsonObject>();
+                SerializeSubProperty(ValueProperty, PairPtr, ValueJsonObject);
+
+                // Add the key-value pair to the JSON object
                 MapJsonObject->SetObjectField(KeyString, ValueJsonObject);
             }
         }
 
+        // Add the serialized map to the parent JSON object
         JsonObject->SetObjectField(Property->GetName(), MapJsonObject);
         return true;
     }
@@ -732,40 +890,57 @@ bool USaveGLibrary::DeserializeMapProperty(FProperty* Property, void* ObjectData
 {
     if (FMapProperty* MapProperty = CastField<FMapProperty>(Property))
     {
+        // Get the key and value properties
         FProperty* KeyProperty = MapProperty->KeyProp;
         FProperty* ValueProperty = MapProperty->ValueProp;
 
+        // Get the map helper to access the map data
         FScriptMapHelper MapHelper(MapProperty, MapProperty->ContainerPtrToValuePtr<void>(ObjectData));
+
+        // Clear the existing map
         MapHelper.EmptyValues();
 
+        // Get the JSON object representing the map
         const TSharedPtr<FJsonObject>* MapJsonObject;
         if (JsonObject->TryGetObjectField(Property->GetName(), MapJsonObject))
         {
-            // Iterate over the JSON object's fields
-            for (const auto& JsonPair : (*MapJsonObject)->Values)
+            // Iterate over the JSON object and deserialize each key-value pair
+            for (const auto& Entry : (*MapJsonObject)->Values)
             {
-                const FString& KeyString = JsonPair.Key;
-                const TSharedPtr<FJsonValue>& JsonValue = JsonPair.Value;
+                // Allocate space for the key and value
+                int32 MapIndex = MapHelper.AddDefaultValue_Invalid_NeedsRehash();
+                if (MapIndex == INDEX_NONE)
+                {
+                    continue;  // Skip if we couldn't add a new pair
+                }
 
-                int32 Index = MapHelper.AddDefaultValue_Invalid_NeedsRehash();
-
-                void* KeyPtr = MapHelper.GetKeyPtr(Index);
-                void* ValuePtr = MapHelper.GetValuePtr(Index);
+                // Get pointers to the key and value in the map
+                void* PairPtr = MapHelper.GetPairPtr(MapIndex);
+                if (!PairPtr) continue;
 
                 // Deserialize the key
-                if (!DeserializeMapKey(KeyProperty, KeyPtr, KeyString))
+                if (!DeserializeMapKeyValue(KeyProperty, PairPtr, Entry.Key))
                 {
-                    continue;  // Skip invalid keys
+                    // If the key couldn't be deserialized, remove the pair
+                    MapHelper.RemoveAt(MapIndex);
+                    continue;
                 }
 
                 // Deserialize the value
                 const TSharedPtr<FJsonObject>* ValueJsonObject;
-                if (JsonValue->TryGetObject(ValueJsonObject))
+                if (Entry.Value->TryGetObject(ValueJsonObject))
                 {
-                    DeserializeSubProperty(ValueProperty, ValuePtr, *ValueJsonObject);
+                    DeserializeSubProperty(ValueProperty, PairPtr, *ValueJsonObject);
+                }
+                else
+                {
+                    // If the value couldn't be deserialized, remove the pair
+                    MapHelper.RemoveAt(MapIndex);
+                    continue;
                 }
             }
 
+            // Rehash the map after adding all elements
             MapHelper.Rehash();
             return true;
         }

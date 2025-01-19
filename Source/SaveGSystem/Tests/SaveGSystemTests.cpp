@@ -78,11 +78,18 @@ bool FSaveGSystemStructTest::RunTest(const FString& Parameters)
     return SaveGSystemTests::RunSaveGSystemTest<USaveGTestStructObject>("TestStructObject", this);
 }
 
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSaveGSystemArrayStructTestTest, "SaveGSystem.ArrayStructTest",
-    EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
-bool FSaveGSystemArrayStructTestTest::RunTest(const FString& Parameters)
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+    FSaveGSystemArrayStructTest, "SaveGSystem.ArrayStructTest", EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+bool FSaveGSystemArrayStructTest::RunTest(const FString& Parameters)
 {
-    return SaveGSystemTests::RunSaveGSystemTest<USaveGTestArrayStructObject>("TestArrayStructTestObject", this);
+    return SaveGSystemTests::RunSaveGSystemTest<USaveGTestArrayStructObject>("TestArrayStructObject", this);
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+    FSaveGSystemMapTest, "SaveGSystem.MapTest", EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+bool FSaveGSystemMapTest::RunTest(const FString& Parameters)
+{
+    return SaveGSystemTests::RunSaveGSystemTest<USaveGTestMapStructObject>("TestMapStructObject", this);
 }
 
 #endif

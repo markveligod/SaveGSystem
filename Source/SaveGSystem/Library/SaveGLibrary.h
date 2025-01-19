@@ -52,11 +52,23 @@ public:
     /** @public Deserializes a boolean property from a JSON object. **/
     static bool DeserializeBoolProperty(FProperty* Property, void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
+    /** @public Serializes a boolean property to a FString. **/
+    static bool SerializeBoolProperty(FProperty* Property, const void* ObjectData, FString& Str);
+
+    /** @public Deserializes a boolean property from a FString. **/
+    static bool DeserializeBoolProperty(FProperty* Property, void* ObjectData, const FString& Str);
+
     /** @public Serializes a byte property (or enum) to a JSON object. **/
     static bool SerializeByteProperty(FProperty* Property, const void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
     /** @public Deserializes a byte property (or enum) from a JSON object. **/
     static bool DeserializeByteProperty(FProperty* Property, void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
+
+    /** @public Serializes a byte property (or enum) to a FString. **/
+    static bool SerializeByteProperty(FProperty* Property, const void* ObjectData, FString& Str);
+
+    /** @public Deserializes a byte property (or enum) from a FString. **/
+    static bool DeserializeByteProperty(FProperty* Property, void* ObjectData, const FString& Str);
 
     /** @public Serializes a string, name, or text property to a JSON object. **/
     static bool SerializeStringProperty(FProperty* Property, const void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
@@ -64,11 +76,23 @@ public:
     /** @public Deserializes a string, name, or text property from a JSON object. **/
     static bool DeserializeStringProperty(FProperty* Property, void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
+    /** @public Serializes a string, name, or text property to a FString. **/
+    static bool SerializeStringProperty(FProperty* Property, const void* ObjectData, FString& Str);
+
+    /** @public Deserializes a string, name, or text property from a FString. **/
+    static bool DeserializeStringProperty(FProperty* Property, void* ObjectData, const FString& Str);
+
     /** @public Serializes a numeric property (int, float, double, etc.) to a JSON object. **/
     static bool SerializeNumericProperty(FProperty* Property, const void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
     /** @public Deserializes a numeric property (int, float, double, etc.) from a JSON object. **/
     static bool DeserializeNumericProperty(FProperty* Property, void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
+
+    /** @public Serializes a numeric property (int, float, double, etc.) to a FString. **/
+    static bool SerializeNumericProperty(FProperty* Property, const void* ObjectData, FString& Str);
+
+    /** @public Deserializes a numeric property (int, float, double, etc.) from a FString. **/
+    static bool DeserializeNumericProperty(FProperty* Property, void* ObjectData, const FString& Str);
 
     /** @public Serializes an object property (UObject, soft object, etc.) to a JSON object. **/
     static bool SerializeObjectProperty(FProperty* Property, const void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
@@ -88,11 +112,11 @@ public:
     /** @public Deserializes an array property from a JSON object. **/
     static bool DeserializeArrayProperty(FProperty* Property, void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
 
-    /** @public Serializes a map key based on its property type. **/
-    static FString SerializeMapKey(FProperty* KeyProperty, const void* KeyPtr);
+    /** @public Serializes a map key or value based on its property type. **/
+    static FString SerializeMapKeyValue(FProperty* Property, const void* Ptr);
 
-    /** @public Deserializes a map key based on its property type. **/
-    static bool DeserializeMapKey(FProperty* KeyProperty, void* KeyPtr, const FString& KeyString);
+    /** @public Deserializes a map key or value based on its property type. **/
+    static bool DeserializeMapKeyValue(FProperty* Property, void* Ptr, const FString& DataString);
 
     /** @public Serializes a map property to a JSON object. **/
     static bool SerializeMapProperty(FProperty* Property, const void* ObjectData, TSharedPtr<FJsonObject> JsonObject);
