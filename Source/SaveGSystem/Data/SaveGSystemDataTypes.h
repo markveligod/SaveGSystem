@@ -41,8 +41,7 @@ inline bool ClogPrint(bool Cond, TCHAR* NameFunction, const FString& Text)
         }                                                                                                   \
     }
 
-#define CLOG_SAVE_G_SYSTEM(Cond, Format, ...) \
-    SaveGSystemSpace::ClogPrint(Cond, ANSI_TO_TCHAR(__FUNCTION__), FString::Printf(TEXT(Format), ##__VA_ARGS__))
+#define CLOG_SAVE_G_SYSTEM(Cond, Format, ...) SaveGSystemSpace::ClogPrint(Cond, ANSI_TO_TCHAR(__FUNCTION__), FString::Printf(TEXT(Format), ##__VA_ARGS__))
 
 /** --- | UENUM | --- **/
 UENUM()
@@ -68,10 +67,7 @@ struct FInitDataAsyncTask_SaveGSystem
 
     UClass* GetObjectClass() const { return Object.IsValid() ? Object->GetClass() : nullptr; }
 
-    bool IsValid() const
-    {
-        return Object.IsValid() && Object->GetClass() && !Tag.IsEmpty() && Action != ETaskAction_SaveGSystem::None && Delay > 0.0f;
-    }
+    bool IsValid() const { return Object.IsValid() && Object->GetClass() && !Tag.IsEmpty() && Action != ETaskAction_SaveGSystem::None && Delay > 0.0f; }
 };
 
 /** --- | Signatures | --- **/

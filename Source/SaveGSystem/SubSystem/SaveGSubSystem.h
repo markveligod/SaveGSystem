@@ -99,8 +99,7 @@ protected:
     /** @protected Template function to bind a delegate with a specific signature FActionSaveGSystemSignature with Arg: const FString&,
      * UObject* */
     template <typename FuncClass>
-    void BindDelegateActionSaveGSystemSignature(
-        FActionSaveGSystemSignature& Delegate, FuncClass* Object, void (FuncClass::*Func)(const FString&, UObject*))
+    void BindDelegateActionSaveGSystemSignature(FActionSaveGSystemSignature& Delegate, FuncClass* Object, void (FuncClass::*Func)(const FString&, UObject*))
     {
         if (CLOG_SAVE_G_SYSTEM(Object == nullptr, "Object is nullptr")) return;
         if (CLOG_SAVE_G_SYSTEM(Func == nullptr, "Func is nullptr")) return;

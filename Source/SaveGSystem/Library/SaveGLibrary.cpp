@@ -10,11 +10,7 @@ bool USaveGLibrary::CompressData(TArray<uint8>& SomeData, TArray<uint8>& OutData
 {
     // Compress the data
     FArchiveSaveCompressedProxy Compressor(OutData, NAME_Zlib);
-    if (Compressor.IsError())
-    {
-        LOG_SAVE_G_SYSTEM(Error, "Failed to initialize compression archive.");
-        return false;
-    }
+    if (Compressor.IsError()) return false;
 
     // Serialize the uncompressed data into the compressor
     Compressor << SomeData;
@@ -25,11 +21,7 @@ bool USaveGLibrary::CompressData(TArray<uint8>& SomeData, TArray<uint8>& OutData
 bool USaveGLibrary::DecompressData(const TArray<uint8>& CompressedData, TArray<uint8>& OutData)
 {
     FArchiveLoadCompressedProxy Decompressor(CompressedData, NAME_Zlib);
-    if (Decompressor.IsError())
-    {
-        LOG_SAVE_G_SYSTEM(Error, "Failed to initialize decompression archive.");
-        return false;
-    }
+    if (Decompressor.IsError()) return false;
 
     // Serialize the decompressed data
     Decompressor << OutData;
@@ -59,7 +51,6 @@ TSharedPtr<FJsonObject> USaveGLibrary::ConvertStringToJsonObject(const FString& 
         return JsonObject;
     }
 
-    LOG_SAVE_G_SYSTEM(Error, "Failed to deserialize json object. Msg: %s", *Reader->GetErrorMessage());
     return {};
 }
 

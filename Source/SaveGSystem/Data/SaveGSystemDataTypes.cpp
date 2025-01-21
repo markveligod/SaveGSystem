@@ -6,8 +6,7 @@
 
 #if !UE_BUILD_SHIPPING && !UE_BUILD_TEST
 
-static TAutoConsoleVariable<bool> EnableD_SaveGSystemShowLog(
-    TEXT("SaveGSystem.ShowLog"), false, TEXT("SaveGSystem.ShowLog [true/false]"), ECVF_Cheat);
+static TAutoConsoleVariable<bool> EnableD_SaveGSystemShowLog(TEXT("SaveGSystem.ShowLog"), false, TEXT("SaveGSystem.ShowLog [true/false]"), ECVF_Cheat);
 
 static FAutoConsoleCommandWithWorldAndArgs EnableD_SaveGSystemSaveAllWorldActor(TEXT("SaveGSystem.SaveAllWorldActor"),
     TEXT("SaveGSystem.SaveAllWorldActor <nothing> | Let's go save all the actors that have the USaveGInterface"),
@@ -45,8 +44,7 @@ static FAutoConsoleCommandWithWorldAndArgs EnableD_SaveGSystemLoadAllWorldActor(
         }),
     ECVF_Cheat);
 
-static FAutoConsoleCommandWithWorldAndArgs EnableD_SaveGSystemSaveFile(TEXT("SaveGSystem.SaveFile"),
-    TEXT("SaveGSystem.SaveFile [Arg1 = FileName]"),
+static FAutoConsoleCommandWithWorldAndArgs EnableD_SaveGSystemSaveFile(TEXT("SaveGSystem.SaveFile"), TEXT("SaveGSystem.SaveFile [Arg1 = FileName]"),
     FConsoleCommandWithWorldAndArgsDelegate::CreateLambda(
         [](const TArray<FString>& Args, UWorld* World)
         {
@@ -57,8 +55,7 @@ static FAutoConsoleCommandWithWorldAndArgs EnableD_SaveGSystemSaveFile(TEXT("Sav
         }),
     ECVF_Cheat);
 
-static FAutoConsoleCommandWithWorldAndArgs EnableD_SaveGSystemLoadFile(TEXT("SaveGSystem.LoadFile"),
-    TEXT("SaveGSystem.LoadFile [Arg1 = FileName]"),
+static FAutoConsoleCommandWithWorldAndArgs EnableD_SaveGSystemLoadFile(TEXT("SaveGSystem.LoadFile"), TEXT("SaveGSystem.LoadFile [Arg1 = FileName]"),
     FConsoleCommandWithWorldAndArgsDelegate::CreateLambda(
         [](const TArray<FString>& Args, UWorld* World)
         {

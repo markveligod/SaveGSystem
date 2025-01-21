@@ -3,7 +3,7 @@ IndentWidth: 4
 UseTab: Never
 TabWidth: 4
 BreakBeforeBraces: Allman
-ColumnLimit: 140
+ColumnLimit: 180
 AccessModifierOffset: -4
 SortIncludes: false
 AllowShortBlocksOnASingleLine: false

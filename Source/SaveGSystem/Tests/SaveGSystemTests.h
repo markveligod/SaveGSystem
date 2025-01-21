@@ -11,13 +11,12 @@
 inline UWorld* GetTestGameWorld()
 {
     const TIndirectArray<FWorldContext>& WorldContexts = GEngine->GetWorldContexts();
-    auto FindElem = Algo::FindByPredicate(WorldContexts, [](const FWorldContext& Context)
-        { return (Context.WorldType == EWorldType::PIE || Context.WorldType == EWorldType::Game) && Context.World(); });
+    auto FindElem = Algo::FindByPredicate(
+        WorldContexts, [](const FWorldContext& Context) { return (Context.WorldType == EWorldType::PIE || Context.WorldType == EWorldType::Game) && Context.World(); });
 
     if (!FindElem)
     {
-        FindElem = Algo::FindByPredicate(
-            WorldContexts, [](const FWorldContext& Context) { return Context.WorldType == EWorldType::Editor && Context.World(); });
+        FindElem = Algo::FindByPredicate(WorldContexts, [](const FWorldContext& Context) { return Context.WorldType == EWorldType::Editor && Context.World(); });
     }
 
     return FindElem ? FindElem->World() : nullptr;
@@ -55,10 +54,7 @@ class FWorldSimulationTicker
 public:
     virtual ~FWorldSimulationTicker() = default;
 
-    FWorldSimulationTicker(const TFunction<bool()>& InCondition, float InTime, UWorld* World)
-        : Condition(InCondition), MaxSimulatedTime(InTime), WeakWorld(World)
-    {
-    }
+    FWorldSimulationTicker(const TFunction<bool()>& InCondition, float InTime, UWorld* World) : Condition(InCondition), MaxSimulatedTime(InTime), WeakWorld(World) {}
 
     virtual void Run()
     {
@@ -96,10 +92,7 @@ public:
     TFunction<bool()> Condition;
     TFunction<void()> OnComplete;
 
-    FSaveGWaitForResponseLatentCommand(TFunction<bool()> InCondition, TFunction<void()> InOnComplete)
-        : Condition(InCondition), OnComplete(InOnComplete)
-    {
-    }
+    FSaveGWaitForResponseLatentCommand(TFunction<bool()> InCondition, TFunction<void()> InOnComplete) : Condition(InCondition), OnComplete(InOnComplete) {}
 
     virtual bool Update() override
     {
@@ -280,8 +273,7 @@ public:
 
     virtual bool IsValidValue() override
     {
-        return Int8 != 0 && Int16 != 0 && UInt16 != 0 && Int32 != 0 && UInt32 != 0 && Int64 != 0 && UInt64 != 0 && Float != 0.0f &&
-               Double != 0.0;
+        return Int8 != 0 && Int16 != 0 && UInt16 != 0 && Int32 != 0 && UInt32 != 0 && Int64 != 0 && UInt64 != 0 && Float != 0.0f && Double != 0.0;
     }
 
     virtual void Reset() override
@@ -360,8 +352,7 @@ public:
 
     virtual bool IsValidValue() override
     {
-        return !SoftClass.GetAssetName().IsEmpty() && !SoftObject.GetAssetName().IsEmpty() && !PathClass.GetAssetName().IsEmpty() &&
-               !PathObject.GetAssetName().IsEmpty();
+        return !SoftClass.GetAssetName().IsEmpty() && !SoftObject.GetAssetName().IsEmpty() && !PathClass.GetAssetName().IsEmpty() && !PathObject.GetAssetName().IsEmpty();
     }
 
     virtual void Reset() override
@@ -736,9 +727,8 @@ public:
             return true;
         };
 
-        return ValidateMap(DefaultMapFString, MapFString) && ValidateMap(DefaultMapFName, MapFName) &&
-               ValidateMap(DefaultMapETestEnumObject, MapETestEnumObject) && ValidateMap(DefaultMapUInt8, MapUInt8) &&
-               ValidateMap(DefaultMapUInt16, MapUInt16) && ValidateMap(DefaultMapUInt32, MapUInt32) &&
+        return ValidateMap(DefaultMapFString, MapFString) && ValidateMap(DefaultMapFName, MapFName) && ValidateMap(DefaultMapETestEnumObject, MapETestEnumObject) &&
+               ValidateMap(DefaultMapUInt8, MapUInt8) && ValidateMap(DefaultMapUInt16, MapUInt16) && ValidateMap(DefaultMapUInt32, MapUInt32) &&
                ValidateMap(DefaultMapUInt64, MapUInt64) && ValidateMap(DefaultMapInt8, MapInt8) && ValidateMap(DefaultMapInt16, MapInt16) &&
                ValidateMap(DefaultMapInt32, MapInt32) && ValidateMap(DefaultMapInt64, MapInt64);
     }
