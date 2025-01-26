@@ -1,8 +1,8 @@
-# SaveGSystem Plugin for Unreal Engine
-
+# SaveGSystem Plugin for Unreal Engine  
+  
 The **SaveGSystem** plugin is a robust and flexible save/load system designed for Unreal Engine 5.5. It provides a comprehensive framework for saving and loading game data, including actors, properties, and complex data structures. The plugin is highly customizable and supports both synchronous and asynchronous operations, making it suitable for a wide range of game development scenarios.  
-**Note**: This plugin is designed exclusively for **single-player games** and **does not support networking or multiplayer functionality**. If you are developing a multiplayer game, you will need to implement additional networking logic to handle save/load operations across clients and servers.
----
+**Note**: This plugin is designed exclusively for **single-player games** and **does not support networking or multiplayer functionality**. If you are developing a multiplayer game, you will need to implement additional networking logic to handle save/load operations across clients and servers.  
+
 
 ## Features
 
@@ -21,7 +21,6 @@ The **SaveGSystem** plugin is a robust and flexible save/load system designed fo
     - Soft Object and Class References
 - **Automated Testing**: Includes a suite of automated tests to ensure the reliability of the save/load system.
 
----
 
 ## Usage
 
@@ -99,7 +98,6 @@ Go to the `Automation` tab.
 
 Run the tests under the `SaveGSystem` category.
 
----
 
 ## Example
 Here’s a simple example of how to use the SaveGSystem in your game:
@@ -161,7 +159,6 @@ void AYourGameMode::LoadGame()
 }
 ```
 
----
 
 ## 📫 Other <a name="Other"></a>
 :bangbang: Attention: If you can improve my trash code then make a pull request.
